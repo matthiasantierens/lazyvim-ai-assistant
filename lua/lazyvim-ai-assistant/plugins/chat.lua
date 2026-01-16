@@ -352,23 +352,25 @@ return {
         },
         prompt_library = get_prompt_library(),
         adapters = {
-          lmstudio = function()
-            return require("codecompanion.adapters").extend("openai_compatible", {
-              name = "lmstudio",
-              formatted_name = "LM Studio",
-              env = {
-                url = cfg.lmstudio_url,
-                api_key = "lm-studio",
-                chat_url = "/v1/chat/completions",
-                models_endpoint = "/v1/models",
-              },
-              schema = {
-                model = {
-                  default = cfg.lmstudio_model,
+          http = {
+            lmstudio = function()
+              return require("codecompanion.adapters").extend("openai_compatible", {
+                name = "lmstudio",
+                formatted_name = "LM Studio",
+                env = {
+                  url = cfg.lmstudio_url,
+                  api_key = "lm-studio",
+                  chat_url = "/v1/chat/completions",
+                  models_endpoint = "/v1/models",
                 },
-              },
-            })
-          end,
+                schema = {
+                  model = {
+                    default = cfg.lmstudio_model,
+                  },
+                },
+              })
+            end,
+          },
         },
       })
 
