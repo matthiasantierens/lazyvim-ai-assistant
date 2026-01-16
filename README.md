@@ -25,6 +25,7 @@ Use your local LM Studio for private, offline AI coding assistance. When LM Stud
 ## Requirements
 
 - [LazyVim](https://www.lazyvim.org/) (Neovim distribution)
+- [Node.js](https://nodejs.org/) (required for GitHub Copilot)
 - [LM Studio](https://lmstudio.ai/) (optional, for local AI)
 - [GitHub Copilot](https://github.com/features/copilot) subscription (for fallback)
 
@@ -52,7 +53,7 @@ return {
 
 1. **Authenticate with GitHub Copilot:**
    ```vim
-   :Copilot setup
+   :Copilot auth
    ```
 
 2. **Set up LM Studio** (optional, see below)
@@ -143,7 +144,7 @@ Press `<leader>ah` in Neovim to show this help anytime.
 | Command | Action |
 |---------|--------|
 | `:LMStudioReconnect` | Re-check LM Studio connection |
-| `:Copilot setup` | Authenticate with GitHub Copilot |
+| `:Copilot auth` | Authenticate with GitHub Copilot |
 | `:AIHelp` | Show keybindings help |
 
 ## Configuration
@@ -175,7 +176,7 @@ require("lazyvim-ai-assistant").setup({
 
 ### Copilot not working
 
-1. Run `:Copilot setup` to authenticate
+1. Run `:Copilot auth` to authenticate
 2. Check `:Copilot status` for issues
 3. Ensure you have an active GitHub Copilot subscription
 
