@@ -34,22 +34,17 @@ Add to your LazyVim config (`lua/plugins/ai-assistant.lua`):
 
 ```lua
 return {
-  { import = "lazyvim-ai-assistant.plugins" },
-}
-```
-
-Or with lazy.nvim directly:
-
-```lua
-{
-  "matthiasantierens/lazyvim-ai-assistant",
-  dependencies = {
-    "zbirenbaum/copilot.lua",
-    "milanglacier/minuet-ai.nvim",
-    "olimorris/codecompanion.nvim",
-    "nvim-lua/plenary.nvim",
+  {
+    "matthiasantierens/lazyvim-ai-assistant",
+    dependencies = {
+      "zbirenbaum/copilot.lua",
+      "milanglacier/minuet-ai.nvim",
+      "olimorris/codecompanion.nvim",
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    import = "lazyvim-ai-assistant.plugins",
   },
-  config = true,
 }
 ```
 
