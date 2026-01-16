@@ -43,6 +43,15 @@ All notable changes to lazyvim-ai-assistant will be documented in this file.
 - New `chat` configuration section with `auto_include_buffer`, `buffer_sync_mode`, `show_backend_notification`
 - Startup notification shows "(with file context)" when auto-include is enabled
 
+#### Inline Code Actions with Diff Preview
+- Code actions now show inline diffs in the source file by default
+- `<leader>ao` optimizes code and shows diff (accept with `<leader>da`, reject with `<leader>dr`)
+- `<leader>af` fixes code with inline diff
+- `<leader>ad` adds documentation with inline diff
+- `<leader>at` generates tests in a new file (auto-detects test directory)
+- `<leader>aR` refactors code with inline diff
+- Uppercase variants (`<leader>aO`, `<leader>aT`) open chat for discussion instead
+
 ### Fixed
 - Fixed CodeCompanion adapter registration for updated API (adapters now under `adapters.http`)
 - Fixed prompt library format for CodeCompanion API change (`strategy` → `interaction`, `short_name` → `alias`)

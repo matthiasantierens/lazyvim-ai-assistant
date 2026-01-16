@@ -152,16 +152,20 @@ Press `<leader>ah` in Neovim to show all keybindings anytime.
 
 ### Code Actions (Visual Mode)
 
-| Shortcut | Action |
-|----------|--------|
-| `<leader>ar` | Review code |
-| `<leader>ae` | Explain code |
-| `<leader>af` | Fix code |
-| `<leader>aR` | Refactor code |
-| `<leader>at` | Write tests |
-| `<leader>ad` | Document code |
-| `<leader>ao` | Optimize code |
-| `<leader>aD` | Debug code |
+Code actions now show inline diffs by default. Use uppercase variants for chat discussion.
+
+| Shortcut | Action | Type |
+|----------|--------|------|
+| `<leader>ao` | Optimize code | Inline (diff) |
+| `<leader>aO` | Optimize code | Chat |
+| `<leader>af` | Fix code | Inline (diff) |
+| `<leader>ad` | Document code | Inline (diff) |
+| `<leader>at` | Write tests | New file |
+| `<leader>aT` | Write tests | Chat |
+| `<leader>aR` | Refactor code | Inline (diff) |
+| `<leader>ar` | Review code | Chat |
+| `<leader>ae` | Explain code | Chat |
+| `<leader>aD` | Debug code | Chat |
 
 ### Context & Sessions (v2.0.0)
 

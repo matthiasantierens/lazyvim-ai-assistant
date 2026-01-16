@@ -234,6 +234,207 @@ Be systematic and thorough in your analysis.]],
         },
       },
     },
+
+    -- =========================================================================
+    -- INLINE PROMPTS (show diff in source file)
+    -- =========================================================================
+
+    ["Optimize Inline"] = {
+      interaction = "inline",
+      description = "Optimize code (shows diff)",
+      opts = {
+        index = 10,
+        is_slash_cmd = true,
+        alias = "oi",
+        auto_submit = true,
+        placement = "replace",
+      },
+      prompts = {
+        {
+          role = "system",
+          content = [[You are a performance optimization expert. Return ONLY the optimized code.
+Do NOT include any explanations, comments about changes, or markdown formatting.
+Do NOT wrap the code in backticks or code blocks.
+Return the raw code only, ready to replace the original.]],
+        },
+        {
+          role = "user",
+          content = function(context)
+            local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
+            return "Optimize this " .. context.filetype .. " code for better performance:\n\n" .. code
+          end,
+        },
+      },
+    },
+
+    ["Refactor Inline"] = {
+      interaction = "inline",
+      description = "Refactor code (shows diff)",
+      opts = {
+        index = 11,
+        is_slash_cmd = true,
+        alias = "ri",
+        auto_submit = true,
+        placement = "replace",
+      },
+      prompts = {
+        {
+          role = "system",
+          content = [[You are an expert code refactoring assistant. Return ONLY the refactored code.
+Do NOT include any explanations, comments about changes, or markdown formatting.
+Do NOT wrap the code in backticks or code blocks.
+Return the raw code only, ready to replace the original.]],
+        },
+        {
+          role = "user",
+          content = function(context)
+            local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
+            return "Refactor this " .. context.filetype .. " code for better quality:\n\n" .. code
+          end,
+        },
+      },
+    },
+
+    ["Fix Inline"] = {
+      interaction = "inline",
+      description = "Fix code (shows diff)",
+      opts = {
+        index = 12,
+        is_slash_cmd = true,
+        alias = "fi",
+        auto_submit = true,
+        placement = "replace",
+      },
+      prompts = {
+        {
+          role = "system",
+          content = [[You are an expert debugger. Return ONLY the fixed code.
+Do NOT include any explanations, comments about changes, or markdown formatting.
+Do NOT wrap the code in backticks or code blocks.
+Return the raw code only, ready to replace the original.]],
+        },
+        {
+          role = "user",
+          content = function(context)
+            local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
+            return "Fix any bugs or issues in this " .. context.filetype .. " code:\n\n" .. code
+          end,
+        },
+      },
+    },
+
+    ["Document Inline"] = {
+      interaction = "inline",
+      description = "Add documentation (shows diff)",
+      opts = {
+        index = 13,
+        is_slash_cmd = true,
+        alias = "di",
+        auto_submit = true,
+        placement = "replace",
+      },
+      prompts = {
+        {
+          role = "system",
+          content = [[You are an expert technical documentation writer. Return ONLY the code with added documentation.
+Use the appropriate documentation format for the language (JSDoc, docstrings, LuaDoc, etc.).
+Do NOT include any explanations outside the code or markdown formatting.
+Do NOT wrap the code in backticks or code blocks.
+Return the raw code only, ready to replace the original.]],
+        },
+        {
+          role = "user",
+          content = function(context)
+            local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
+            return "Add documentation to this " .. context.filetype .. " code:\n\n" .. code
+          end,
+        },
+      },
+    },
+
+    ["Write Tests Inline"] = {
+      interaction = "inline",
+      description = "Generate tests (new file)",
+      opts = {
+        index = 14,
+        is_slash_cmd = true,
+        alias = "ti",
+        auto_submit = true,
+        ---@return number|nil
+        pre_hook = function()
+          -- Detect test directory and create appropriate test file
+          local current_file = vim.fn.expand("%:t:r") -- filename without extension
+          local current_ext = vim.fn.expand("%:e") -- extension
+          local current_dir = vim.fn.expand("%:p:h") -- directory
+
+          -- Common test directory patterns
+          local test_dirs = { "tests", "test", "spec", "__tests__" }
+          local project_root = vim.fn.getcwd()
+
+          local test_dir = nil
+          for _, dir in ipairs(test_dirs) do
+            if vim.fn.isdirectory(project_root .. "/" .. dir) == 1 then
+              test_dir = project_root .. "/" .. dir
+              break
+            end
+          end
+
+          -- Generate test filename based on language conventions
+          local test_filename
+          if current_ext == "lua" then
+            test_filename = "test_" .. current_file .. ".lua"
+          elseif current_ext == "py" then
+            test_filename = "test_" .. current_file .. ".py"
+          elseif current_ext == "ts" or current_ext == "tsx" then
+            test_filename = current_file .. ".test.ts"
+          elseif current_ext == "js" or current_ext == "jsx" then
+            test_filename = current_file .. ".test.js"
+          else
+            test_filename = current_file .. "_test." .. current_ext
+          end
+
+          -- Create buffer with suggested path
+          local test_path
+          if test_dir then
+            test_path = test_dir .. "/" .. test_filename
+          else
+            test_path = current_dir .. "/" .. test_filename
+          end
+
+          local bufnr = vim.api.nvim_create_buf(true, false)
+          vim.api.nvim_buf_set_name(bufnr, test_path)
+          vim.api.nvim_set_current_buf(bufnr)
+          vim.api.nvim_set_option_value("filetype", current_ext, { buf = bufnr })
+
+          return bufnr
+        end,
+      },
+      prompts = {
+        {
+          role = "system",
+          content = [[You are an expert test writer. Generate comprehensive unit tests for the provided code.
+Return ONLY the test code without any explanations or markdown formatting.
+Do NOT wrap the code in backticks or code blocks.
+Use the appropriate testing framework for the language:
+- Lua: mini.test or busted
+- Python: pytest
+- JavaScript/TypeScript: Jest or Vitest
+- Other: standard testing conventions
+
+Include tests for:
+- Happy path scenarios
+- Edge cases
+- Error handling]],
+        },
+        {
+          role = "user",
+          content = function(context)
+            local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
+            return "Write tests for this " .. context.filetype .. " code:\n\n" .. code
+          end,
+        },
+      },
+    },
   }
 end
 
@@ -348,7 +549,16 @@ return {
         display = {
           diff = {
             enabled = true,
-            provider = "mini_diff",
+            provider = "inline",
+            provider_opts = {
+              inline = {
+                layout = "vertical",
+                opts = {
+                  show_keymap_hints = true,
+                  show_removed = true,
+                },
+              },
+            },
           },
           chat = {
             -- Show mode in chat window
@@ -424,18 +634,24 @@ return {
       { "<leader>aa", ":'<,'>CodeCompanionChat<cr>", mode = "v", desc = "Chat with selection" },
       { "<leader>an", "<cmd>CodeCompanionChat<cr>", mode = "n", desc = "New chat (no file context)" },
       { "<leader>aA", ":'<,'>CodeCompanionChat Add<cr>", mode = "v", desc = "Add selection to chat" },
-      { "<leader>ar", ":'<,'>CodeCompanion /review<cr>", mode = "v", desc = "Review code" },
-      { "<leader>ae", ":'<,'>CodeCompanion /explain<cr>", mode = "v", desc = "Explain code" },
-      { "<leader>af", ":'<,'>CodeCompanion /fix<cr>", mode = "v", desc = "Fix code" },
       { "<leader>ai", "<cmd>CodeCompanion<cr>", mode = "n", desc = "Inline prompt" },
       { "<leader>ai", ":'<,'>CodeCompanion<cr>", mode = "v", desc = "Inline prompt with selection" },
       { "<leader>dD", "<cmd>CodeCompanionChat diff<cr>", mode = "n", desc = "Super Diff view" },
 
-      -- New v2.0.0 prompts
-      { "<leader>at", ":'<,'>CodeCompanion /test<cr>", mode = "v", desc = "Write tests" },
-      { "<leader>ad", ":'<,'>CodeCompanion /doc<cr>", mode = "v", desc = "Document code" },
-      { "<leader>ao", ":'<,'>CodeCompanion /optimize<cr>", mode = "v", desc = "Optimize code" },
-      { "<leader>aR", ":'<,'>CodeCompanion /refactor<cr>", mode = "v", desc = "Refactor code" },
+      -- Code Actions - Inline (show diff in source file)
+      { "<leader>ao", ":'<,'>CodeCompanion /oi<cr>", mode = "v", desc = "Optimize (inline diff)" },
+      { "<leader>af", ":'<,'>CodeCompanion /fi<cr>", mode = "v", desc = "Fix (inline diff)" },
+      { "<leader>ad", ":'<,'>CodeCompanion /di<cr>", mode = "v", desc = "Document (inline diff)" },
+      { "<leader>at", ":'<,'>CodeCompanion /ti<cr>", mode = "v", desc = "Write tests (new file)" },
+      { "<leader>aR", ":'<,'>CodeCompanion /ri<cr>", mode = "v", desc = "Refactor (inline diff)" },
+
+      -- Code Actions - Chat (opens discussion)
+      { "<leader>aO", ":'<,'>CodeCompanion /optimize<cr>", mode = "v", desc = "Optimize (chat)" },
+      { "<leader>aT", ":'<,'>CodeCompanion /test<cr>", mode = "v", desc = "Write tests (chat)" },
+
+      -- Code Actions - Chat only (no inline version)
+      { "<leader>ar", ":'<,'>CodeCompanion /review<cr>", mode = "v", desc = "Review code" },
+      { "<leader>ae", ":'<,'>CodeCompanion /explain<cr>", mode = "v", desc = "Explain code" },
       { "<leader>aD", ":'<,'>CodeCompanion /debug<cr>", mode = "v", desc = "Debug code" },
       { "<leader>aD", "<cmd>CodeCompanion /debug<cr>", mode = "n", desc = "Debug (describe issue)" },
 
