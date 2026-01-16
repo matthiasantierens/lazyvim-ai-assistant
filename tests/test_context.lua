@@ -267,7 +267,7 @@ T['create_commands()']['creates AIContext command'] = function()
 end
 
 -- =============================================================================
--- v2.1.0: should_exclude()
+-- v2.0.0: should_exclude()
 -- =============================================================================
 
 T['should_exclude()'] = new_set()
@@ -308,7 +308,7 @@ T['should_exclude()']['matches image patterns'] = function()
 end
 
 -- =============================================================================
--- v2.1.0: truncate_lines()
+-- v2.0.0: truncate_lines()
 -- =============================================================================
 
 T['truncate_lines()'] = new_set()
@@ -341,7 +341,7 @@ T['truncate_lines()']['returns unchanged when zero limit'] = function()
 end
 
 -- =============================================================================
--- v2.1.0: trim_whitespace()
+-- v2.0.0: trim_whitespace()
 -- =============================================================================
 
 T['trim_whitespace()'] = new_set()

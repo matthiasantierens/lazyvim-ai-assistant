@@ -331,7 +331,7 @@ T['config validation']['accepts valid picker values'] = function()
 end
 
 -- =============================================================================
--- v2.1.0: Enable/Disable functionality
+-- v2.0.0: Enable/Disable functionality
 -- =============================================================================
 
 T['enable/disable'] = new_set()
@@ -381,7 +381,7 @@ T['enable/disable']['setup with enabled=false disables AI'] = function()
 end
 
 -- =============================================================================
--- v2.1.0: Context limiting getters
+-- v2.0.0: Context limiting getters
 -- =============================================================================
 
 T['context limiting'] = new_set()
@@ -438,7 +438,7 @@ T['context limiting']['exclude_patterns can be overridden'] = function()
 end
 
 -- =============================================================================
--- v2.1.0: Autocomplete config getters
+-- v2.0.0: Autocomplete config getters
 -- =============================================================================
 
 T['autocomplete config'] = new_set()
@@ -480,6 +480,76 @@ T['autocomplete config']['autocomplete settings can be overridden'] = function()
   eq(child.lua_get('_ctx'), 8000)
   eq(child.lua_get('_n'), 3)
   eq(child.lua_get('_max'), 512)
+end
+
+-- =============================================================================
+-- v2.0.0: Tools config getters
+-- =============================================================================
+
+T['tools config'] = new_set()
+
+T['tools config']['default config has tools section'] = function()
+  local result = child.lua_get('M.config.tools')
+  h.expect_truthy(result)
+  h.expect_truthy(result.fetch_webpage)
+end
+
+T['tools config']['is_fetch_webpage_enabled returns true by default'] = function()
+  local result = child.lua_get('M.is_fetch_webpage_enabled()')
+  eq(result, true)
+end
+
+T['tools config']['get_fetch_webpage_adapter returns jina by default'] = function()
+  local result = child.lua_get('M.get_fetch_webpage_adapter()')
+  eq(result, 'jina')
+end
+
+T['tools config']['fetch_webpage enabled can be overridden'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({ tools = { fetch_webpage = { enabled = false } } })
+    _enabled = M.is_fetch_webpage_enabled()
+  ]])
+  local enabled = child.lua_get('_enabled')
+  eq(enabled, false)
+end
+
+T['tools config']['fetch_webpage adapter can be overridden'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({ tools = { fetch_webpage = { adapter = "custom_adapter" } } })
+    _adapter = M.get_fetch_webpage_adapter()
+  ]])
+  local adapter = child.lua_get('_adapter')
+  eq(adapter, 'custom_adapter')
+end
+
+T['tools config']['getters handle missing tools config gracefully'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    -- Manually remove tools config to test graceful handling
+    M.config.tools = nil
+    _enabled = M.is_fetch_webpage_enabled()
+    _adapter = M.get_fetch_webpage_adapter()
+  ]])
+  -- Should return defaults when config is missing
+  eq(child.lua_get('_enabled'), true)
+  eq(child.lua_get('_adapter'), 'jina')
 end
 
 return T

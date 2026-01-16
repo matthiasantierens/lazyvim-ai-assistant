@@ -1,6 +1,6 @@
 -- Autocomplete configuration
 -- LM Studio via minuet.nvim with Copilot fallback
--- v2.1.0: Added is_enabled check and configurable context limits
+-- v2.0.0: Added is_enabled check and configurable context limits
 
 --- Get config values from central module
 local function get_config()
@@ -9,7 +9,7 @@ local function get_config()
     lmstudio_url = main.get_lmstudio_url(),
     lmstudio_model = main.get_lmstudio_model(),
     copilot_model = main.get_copilot_autocomplete_model(),
-    -- v2.1.0: New autocomplete settings
+    -- v2.0.0: New autocomplete settings
     context_window = main.get_autocomplete_context_window(),
     n_completions = main.get_autocomplete_n_completions(),
     max_tokens = main.get_autocomplete_max_tokens(),
@@ -133,12 +133,12 @@ return {
         throttle = 1000,
         -- Debounce to reduce request frequency
         debounce = 400,
-        -- v2.1.0: Configurable completion settings (defaults reduced for cost savings)
+        -- v2.0.0: Configurable completion settings (defaults reduced for cost savings)
         n_completions = cfg.n_completions,
         context_window = cfg.context_window,
         -- Reduce notifications to warnings only
         notify = "warn",
-        -- v2.1.0: Check if AI is enabled before making requests
+        -- v2.0.0: Check if AI is enabled before making requests
         enabled = function()
           return is_ai_enabled()
         end,
@@ -182,7 +182,7 @@ File type: {{language}}
             -- Enable streaming for faster first tokens
             stream = true,
             optional = {
-              -- v2.1.0: Configurable max_tokens (default reduced from 256 to 128)
+              -- v2.0.0: Configurable max_tokens (default reduced from 256 to 128)
               max_tokens = cfg.max_tokens,
               top_p = 0.9,
             },

@@ -1,7 +1,6 @@
 -- CodeCompanion configuration
 -- Chat and inline code assistance with LM Studio or Copilot fallback
--- v2.0.0: Added Plan/Build mode, tool groups, and extended prompt library
--- v2.1.0: Added is_enabled check, keybinding for toggle, buffer truncation
+-- v2.0.0: Added Plan/Build mode, tool groups, extended prompt library, enable/disable, fetch_webpage
 
 --- Get config values from central module
 local function get_config()
@@ -10,6 +9,9 @@ local function get_config()
     lmstudio_url = main.get_lmstudio_url(),
     lmstudio_model = main.get_lmstudio_model(),
     copilot_chat_model = main.get_copilot_chat_model(),
+    -- v2.0.0: Tools config
+    fetch_webpage_enabled = main.is_fetch_webpage_enabled(),
+    fetch_webpage_adapter = main.get_fetch_webpage_adapter(),
   }
 end
 
@@ -19,7 +21,7 @@ local function is_ai_enabled()
   return main.is_enabled()
 end
 
---- Truncate buffer content for context (v2.1.0)
+--- Truncate buffer content for context (v2.0.0)
 ---@param content string Buffer content
 ---@return string Truncated content
 local function truncate_buffer_content(content)
@@ -558,10 +560,17 @@ return {
               },
             },
             -- Tool groups for agentic workflows
+            -- v2.0.0: Added fetch_webpage tool configuration and to groups
             tools = {
+              -- Configure the fetch_webpage tool (uses Jina adapter by default, free, no API key)
+              ["fetch_webpage"] = {
+                opts = {
+                  adapter = cfg.fetch_webpage_adapter,
+                },
+              },
               groups = {
                 ["full_stack"] = {
-                  description = "Full development tools: file operations and command execution",
+                  description = "Full development tools: file operations, command execution, and web fetching",
                   system_prompt = agent.get_system_prompt_for_mode(agent.MODES.BUILD),
                   tools = {
                     "cmd_runner",
@@ -570,15 +579,17 @@ return {
                     "read_file",
                     "file_search",
                     "grep_search",
+                    "fetch_webpage", -- v2.0.0: Added for fetching documentation/references
                   },
                 },
                 ["read_only"] = {
-                  description = "Read-only tools for analysis and planning",
+                  description = "Read-only tools for analysis, planning, and research",
                   system_prompt = agent.get_system_prompt_for_mode(agent.MODES.PLAN),
                   tools = {
                     "read_file",
                     "file_search",
                     "grep_search",
+                    "fetch_webpage", -- v2.0.0: Added for fetching documentation/references
                   },
                 },
               },
@@ -669,7 +680,7 @@ return {
       })
     end,
     keys = {
-      -- v2.1.0: AI Enable/Disable toggle
+      -- v2.0.0: AI Enable/Disable toggle
       {
         "<leader>aE",
         function()
@@ -683,7 +694,7 @@ return {
       {
         "<leader>aa",
         function()
-          -- v2.1.0: Check if AI is enabled
+          -- v2.0.0: Check if AI is enabled
           if not is_ai_enabled() then
             vim.notify("AI Assistant is disabled. Use <leader>aE or :AIEnable to enable.", vim.log.levels.WARN)
             return
@@ -756,7 +767,7 @@ return {
       {
         "<leader>aF",
         function()
-          -- v2.1.0: Check if AI is enabled
+          -- v2.0.0: Check if AI is enabled
           if not is_ai_enabled() then
             vim.notify("AI Assistant is disabled. Use <leader>aE or :AIEnable to enable.", vim.log.levels.WARN)
             return

@@ -1,6 +1,6 @@
 -- lazyvim-ai-assistant
 -- Local-first AI coding assistant with Copilot fallback for LazyVim
--- v2.1.0: Added global enable/disable toggle, cost-saving context limits
+-- v2.0.0: Added Plan/Build mode, tools, context limiting, enable/disable toggle
 
 local M = {}
 
@@ -40,8 +40,7 @@ M.config = {
     show_mode_indicator = true, -- Show mode in lualine
   },
 
-  -- v2.0.0: Context management settings
-  -- v2.1.0: Added context limiting options for cost savings
+  -- v2.0.0: Context management settings with limiting options for cost savings
   context = {
     auto_project = true, -- Auto-detect project type
     max_file_size = 100000, -- Max file size for context (bytes)
@@ -63,7 +62,7 @@ M.config = {
     },
   },
 
-  -- v2.1.0: Autocomplete settings for cost control
+  -- v2.0.0: Autocomplete settings for cost control
   autocomplete = {
     context_window = 4000, -- Characters of context before cursor (default was 8000)
     n_completions = 1, -- Number of suggestions to request (default was 2)
@@ -81,6 +80,14 @@ M.config = {
     enabled = true, -- Enable session persistence
     auto_save = true, -- Auto-save on chat close
     max_sessions = 50, -- Max stored sessions
+  },
+
+  -- v2.0.0: Tool settings
+  tools = {
+    fetch_webpage = {
+      enabled = true, -- Enable the fetch_webpage tool
+      adapter = "jina", -- Adapter to use (jina is free, no API key needed)
+    },
   },
 }
 
@@ -243,7 +250,7 @@ function M.is_plan_mode()
   return require("lazyvim-ai-assistant.agent").is_plan_mode()
 end
 
--- v2.1.0: Global enable/disable functions
+-- v2.0.0: Global enable/disable functions
 
 --- Check if AI assistant is enabled
 ---@return boolean
@@ -278,7 +285,7 @@ function M.toggle()
   return M._enabled
 end
 
--- v2.1.0: Context config getters
+-- v2.0.0: Context config getters
 
 --- Get max context lines setting
 ---@return number|nil
@@ -305,7 +312,7 @@ function M.get_trim_whitespace()
   return chat.trim_whitespace ~= false
 end
 
--- v2.1.0: Autocomplete config getters
+-- v2.0.0: Autocomplete config getters
 
 --- Get autocomplete context window size
 ---@return number
@@ -323,6 +330,24 @@ end
 ---@return number
 function M.get_autocomplete_max_tokens()
   return (M.config.autocomplete or {}).max_tokens or 128
+end
+
+-- v2.0.0: Tools config getters
+
+--- Check if fetch_webpage tool is enabled
+---@return boolean
+function M.is_fetch_webpage_enabled()
+  local tools = M.config.tools or {}
+  local fetch = tools.fetch_webpage or {}
+  return fetch.enabled ~= false
+end
+
+--- Get fetch_webpage adapter
+---@return string
+function M.get_fetch_webpage_adapter()
+  local tools = M.config.tools or {}
+  local fetch = tools.fetch_webpage or {}
+  return fetch.adapter or "jina"
 end
 
 --- Create user commands for enable/disable

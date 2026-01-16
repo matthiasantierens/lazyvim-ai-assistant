@@ -1,6 +1,6 @@
 -- Lualine status indicator for LM Studio and Agent Mode
 -- Shows when LM Studio is active and current AI mode (Plan/Build)
--- v2.1.0: Shows "AI OFF" when AI assistant is disabled
+-- v2.0.0: Shows "AI OFF" when AI assistant is disabled
 
 return {
   {
@@ -11,7 +11,7 @@ return {
       opts.sections = opts.sections or {}
       opts.sections.lualine_x = opts.sections.lualine_x or {}
 
-      -- v2.1.0: Add AI disabled indicator (highest priority - shows first)
+      -- v2.0.0: Add AI disabled indicator (highest priority - shows first)
       table.insert(opts.sections.lualine_x, 1, {
         function()
           return "AI OFF"

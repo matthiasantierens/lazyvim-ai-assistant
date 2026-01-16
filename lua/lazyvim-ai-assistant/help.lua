@@ -1,7 +1,6 @@
 -- Help display for AI keybindings
 -- Shows all available keybindings in a floating window
--- v2.0.0: Added Plan/Build mode, new prompts, context, and session keybindings
--- v2.1.0: Added enable/disable toggle and cost-saving features
+-- v2.0.0: Added Plan/Build mode, prompts, context, sessions, enable/disable, tools
 
 local M = {}
 
@@ -22,7 +21,7 @@ function M.show()
   local enabled_status = ai_enabled and "ENABLED" or "DISABLED (saving tokens)"
 
   local lines = {
-    "                    AI Assistant Keybindings (v2.1)                ",
+    "                    AI Assistant Keybindings (v2.0)                ",
     "====================================================================",
     "",
     " STATUS",
@@ -31,7 +30,7 @@ function M.show()
     "   Mode:    " .. mode_display .. (mode == "build" and " (full tools)" or " (read-only)"),
     "",
     "====================================================================",
-    " ENABLE/DISABLE (v2.1 - Save Tokens)",
+    " ENABLE/DISABLE (Save Tokens)",
     "====================================================================",
     "   <leader>aE   Toggle AI on/off (saves tokens when off)",
     "",
@@ -72,6 +71,17 @@ function M.show()
 "   <leader>aA   Add selection to existing chat (v)",
 "   <leader>ai   Inline prompt (n) / with selection (v)",
 "   <leader>ah   Show this help",
+"",
+"====================================================================",
+" TOOLS (use @ in chat)",
+"====================================================================",
+"   @{fetch_webpage}   Fetch content from a URL (uses Jina, free)",
+"   @{full_stack}      All dev tools including web fetch",
+"   @{read_only}       Read-only tools including web fetch",
+"",
+" Example usage in chat:",
+"   Use @{fetch_webpage} to get https://neovim.io/doc/",
+"   @{full_stack} fetch docs from https://api.example.com and implement",
 "",
 "====================================================================",
 " CODE ACTIONS (visual mode)",
@@ -125,7 +135,7 @@ function M.show()
     "   :AIPrompts dir       Show prompts directory",
     "",
     "====================================================================",
-    " COST-SAVING CONFIG OPTIONS (v2.1)",
+    " COST-SAVING CONFIG OPTIONS",
     "====================================================================",
     "   enabled = false           Disable all AI features",
     "   context.max_context_lines = 500   Truncate file context",

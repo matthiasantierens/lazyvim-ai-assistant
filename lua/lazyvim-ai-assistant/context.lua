@@ -1,6 +1,6 @@
 -- Context management for lazyvim-ai-assistant
 -- Provides file picker integration, project context, and smart context handling
--- v2.1.0: Added context limiting (max_context_lines, exclude_patterns, trim_whitespace)
+-- v2.0.0: Added context limiting (max_context_lines, exclude_patterns, trim_whitespace)
 
 local M = {}
 
