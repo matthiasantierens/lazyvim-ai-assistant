@@ -2,6 +2,99 @@
 
 All notable changes to lazyvim-ai-assistant will be documented in this file.
 
+## [2.0.0] - 2025-01-16
+
+### Major Features
+
+#### Plan/Build Mode (Agent Mode)
+- **Plan mode**: Read-only analysis mode for planning without making changes
+- **Build mode**: Full development mode with all tools enabled (default)
+- Toggle between modes with `<Tab>` in chat buffer
+- Visual indicator in lualine showing current mode (`[BUILD]` / `[PLAN]`)
+- Mode-specific system prompts for appropriate AI behavior
+- Commands: `:AIBuildMode`, `:AIPlanMode`, `:AIToggleMode`, `:AIMode`
+
+#### Context Management
+- File picker integration (telescope/fzf-lua) for adding files to context
+- Project structure detection and summary
+- Git status integration
+- Commands: `:AIContext project`, `:AIContext git`, `:AIContext file`
+
+#### Custom Prompts
+- Load project-specific prompts from `.ai/prompts/` directory
+- Markdown-based prompt format with YAML front matter
+- Auto-registration as slash commands
+- Commands: `:AIPrompts list`, `:AIPrompts reload`, `:AIPrompts init`
+
+#### Session Persistence
+- Save and restore chat sessions across Neovim restarts
+- Integration with codecompanion-history.nvim
+- Browse, save, and delete sessions
+- Commands: `:AISessions`, `:AISave`, `:AIDelete`
+
+#### Improved Inline Editing
+- Hunk-based diff navigation (`<leader>dn`, `<leader>dp`)
+- Accept individual hunks (`<leader>dh`)
+- AI change snapshots for undo (`<leader>du`)
+- Commands: `:AIUndo`, `:AISnapshots`, `:AIClearSnapshots`
+
+### New Built-in Prompts
+- `/refactor` - Refactor selected code
+- `/test` - Generate tests for code
+- `/doc` - Document code/function
+- `/optimize` - Suggest performance improvements
+- `/debug` - Help debug code issues
+
+### New Keybindings
+- `<Tab>` (chat) - Toggle Plan/Build mode
+- `<leader>ab` - Switch to Build mode
+- `<leader>ap` - Switch to Plan mode
+- `<leader>ac` - Add files to context
+- `<leader>as` - Browse sessions
+- `<leader>aR` - Refactor code (visual)
+- `<leader>at` - Write tests (visual)
+- `<leader>ad` - Document code (visual)
+- `<leader>ao` - Optimize code (visual)
+- `<leader>aD` - Debug code (normal/visual)
+- `<leader>dh` - Accept current hunk
+- `<leader>dn` - Next diff hunk
+- `<leader>dp` - Previous diff hunk
+- `<leader>du` - Undo last AI change
+
+### New Configuration Options
+```lua
+agent = {
+  default_mode = "build",
+  show_mode_indicator = true,
+},
+context = {
+  auto_project = true,
+  max_file_size = 100000,
+  picker = "auto",
+},
+prompts = {
+  project_dir = ".ai/prompts",
+  load_builtin = true,
+},
+history = {
+  enabled = true,
+  auto_save = true,
+  max_sessions = 50,
+},
+```
+
+### New Dependencies
+- `ravitemer/codecompanion-history.nvim` (optional) - Session persistence
+
+### Technical
+- New modules: `agent.lua`, `context.lua`, `prompts.lua`, `diff.lua`
+- Enhanced health checks for v2.0.0 features
+- Expanded help window with all new keybindings
+- Updated lualine component with mode indicator
+- Tool groups for agentic workflows in CodeCompanion
+
+---
+
 ## [1.0.0] - 2025-01-16
 
 ### Features

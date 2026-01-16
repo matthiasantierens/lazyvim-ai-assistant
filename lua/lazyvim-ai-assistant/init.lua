@@ -1,17 +1,47 @@
 -- lazyvim-ai-assistant
 -- Local-first AI coding assistant with Copilot fallback for LazyVim
+-- v2.0.0: Added Plan/Build mode, context management, prompt library, and session persistence
 
 local M = {}
 
 -- Default configuration
 M.config = {
+  -- LM Studio settings (local AI)
   lmstudio = {
     url = "http://localhost:1234",
     model = "qwen2.5-coder-14b-instruct-mlx",
   },
+
+  -- Copilot settings (cloud fallback)
   copilot = {
     autocomplete_model = "claude-haiku-4.5",
     chat_model = "claude-sonnet-4.5",
+  },
+
+  -- v2.0.0: Agent mode settings (Plan/Build)
+  agent = {
+    default_mode = "build", -- "build" or "plan"
+    show_mode_indicator = true, -- Show mode in lualine
+  },
+
+  -- v2.0.0: Context management settings
+  context = {
+    auto_project = true, -- Auto-detect project type
+    max_file_size = 100000, -- Max file size for context (bytes)
+    picker = "auto", -- "telescope", "fzf", or "auto"
+  },
+
+  -- v2.0.0: Custom prompts settings
+  prompts = {
+    project_dir = ".ai/prompts", -- Project-local prompts directory
+    load_builtin = true, -- Load built-in prompts
+  },
+
+  -- v2.0.0: Session persistence settings
+  history = {
+    enabled = true, -- Enable session persistence
+    auto_save = true, -- Auto-save on chat close
+    max_sessions = 50, -- Max stored sessions
   },
 }
 
@@ -19,6 +49,24 @@ M.config = {
 ---@param opts table|nil Configuration options
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+
+  -- Initialize submodules that need setup
+  local agent = require("lazyvim-ai-assistant.agent")
+  agent.setup(M.config.agent)
+  agent.create_commands()
+
+  local context = require("lazyvim-ai-assistant.context")
+  context.setup(M.config.context)
+  context.create_commands()
+
+  local prompts = require("lazyvim-ai-assistant.prompts")
+  prompts.setup(M.config.prompts)
+  prompts.create_commands()
+
+  local diff = require("lazyvim-ai-assistant.diff")
+  diff.setup()
+  diff.create_commands()
+  diff.create_keymaps()
 end
 
 --- Get the current configuration
@@ -27,6 +75,7 @@ function M.get_config()
   return M.config
 end
 
+-- LM Studio getters
 --- Get LM Studio URL from config
 ---@return string
 function M.get_lmstudio_url()
@@ -39,6 +88,7 @@ function M.get_lmstudio_model()
   return M.config.lmstudio.model
 end
 
+-- Copilot getters
 --- Get Copilot autocomplete model from config
 ---@return string
 function M.get_copilot_autocomplete_model()
@@ -49,6 +99,25 @@ end
 ---@return string
 function M.get_copilot_chat_model()
   return M.config.copilot.chat_model
+end
+
+-- v2.0.0: Agent mode getters
+--- Get current agent mode
+---@return string "build" or "plan"
+function M.get_agent_mode()
+  return require("lazyvim-ai-assistant.agent").get_mode()
+end
+
+--- Check if in build mode
+---@return boolean
+function M.is_build_mode()
+  return require("lazyvim-ai-assistant.agent").is_build_mode()
+end
+
+--- Check if in plan mode
+---@return boolean
+function M.is_plan_mode()
+  return require("lazyvim-ai-assistant.agent").is_plan_mode()
 end
 
 return M
