@@ -139,13 +139,21 @@ Press `<leader>ah` in Neovim to show this help anytime.
 | `<leader>dr` | Reject diff change |
 | `<leader>dD` | Super Diff view (all changes) |
 
-### Commands
+### Provided Commands
 
-| Command | Action |
-|---------|--------|
-| `:LMStudioReconnect` | Re-check LM Studio connection |
-| `:Copilot auth` | Authenticate with GitHub Copilot |
-| `:AIHelp` | Show keybindings help |
+This plugin adds two custom commands:
+
+| Command | Description |
+|---------|-------------|
+| `:LMStudioReconnect` | Re-check if LM Studio is running and show connection status. **Note:** Restart Neovim after starting/stopping LM Studio to switch backends. |
+| `:AIHelp` | Show a floating window with all AI keybindings and current backend status. Also available via `<leader>ah`. Press `q` or `<Esc>` to close. |
+
+Other useful commands:
+
+| Command | Description |
+|---------|-------------|
+| `:Copilot auth` | Authenticate with GitHub Copilot (first-time setup) |
+| `:Copilot status` | Check Copilot connection status |
 
 ## Configuration
 

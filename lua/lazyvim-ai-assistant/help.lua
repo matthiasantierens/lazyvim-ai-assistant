@@ -55,7 +55,7 @@ function M.show()
     " COMMANDS",
     "─────────────────────────────────────────────────────────────────",
     "   :LMStudioReconnect   Re-check LM Studio connection",
-    "   :Copilot setup       Authenticate with GitHub Copilot",
+    "   :Copilot auth        Authenticate with GitHub Copilot",
     "",
     "                    Press 'q' or <Esc> to close                  ",
   }
