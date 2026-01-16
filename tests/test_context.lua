@@ -266,4 +266,103 @@ T['create_commands()']['creates AIContext command'] = function()
   eq(exists, true)
 end
 
+-- =============================================================================
+-- v2.1.0: should_exclude()
+-- =============================================================================
+
+T['should_exclude()'] = new_set()
+
+T['should_exclude()']['returns false when no patterns'] = function()
+  local result = child.lua_get('Context.should_exclude("test.js", {})')
+  eq(result, false)
+end
+
+T['should_exclude()']['returns false when nil patterns'] = function()
+  local result = child.lua_get('Context.should_exclude("test.js", nil)')
+  eq(result, false)
+end
+
+T['should_exclude()']['matches *.min.js pattern'] = function()
+  local result = child.lua_get('Context.should_exclude("bundle.min.js", {"*.min.js"})')
+  eq(result, true)
+end
+
+T['should_exclude()']['matches *.lock pattern'] = function()
+  local result = child.lua_get('Context.should_exclude("yarn.lock", {"*.lock"})')
+  eq(result, true)
+end
+
+T['should_exclude()']['matches exact filename pattern'] = function()
+  local result = child.lua_get('Context.should_exclude("package-lock.json", {"package-lock.json"})')
+  eq(result, true)
+end
+
+T['should_exclude()']['returns false for non-matching file'] = function()
+  local result = child.lua_get('Context.should_exclude("app.js", {"*.min.js", "*.lock"})')
+  eq(result, false)
+end
+
+T['should_exclude()']['matches image patterns'] = function()
+  local result = child.lua_get('Context.should_exclude("logo.png", {"*.png", "*.jpg"})')
+  eq(result, true)
+end
+
+-- =============================================================================
+-- v2.1.0: truncate_lines()
+-- =============================================================================
+
+T['truncate_lines()'] = new_set()
+
+T['truncate_lines()']['returns content unchanged when under limit'] = function()
+  child.lua('_result = Context.truncate_lines("line1\\nline2\\nline3", 10)')
+  local result = child.lua_get('_result')
+  eq(result, "line1\nline2\nline3")
+end
+
+T['truncate_lines()']['truncates content over limit'] = function()
+  child.lua('_result = Context.truncate_lines("line1\\nline2\\nline3\\nline4\\nline5", 2)')
+  local result = child.lua_get('_result')
+  h.expect_match(result, 'line1')
+  h.expect_match(result, 'line2')
+  h.expect_match(result, 'Truncated')
+  h.expect_match(result, '2 of 5')
+end
+
+T['truncate_lines()']['returns unchanged when nil limit'] = function()
+  child.lua('_result = Context.truncate_lines("line1\\nline2", nil)')
+  local result = child.lua_get('_result')
+  eq(result, "line1\nline2")
+end
+
+T['truncate_lines()']['returns unchanged when zero limit'] = function()
+  child.lua('_result = Context.truncate_lines("line1\\nline2", 0)')
+  local result = child.lua_get('_result')
+  eq(result, "line1\nline2")
+end
+
+-- =============================================================================
+-- v2.1.0: trim_whitespace()
+-- =============================================================================
+
+T['trim_whitespace()'] = new_set()
+
+T['trim_whitespace()']['removes consecutive blank lines'] = function()
+  child.lua('_result = Context.trim_whitespace("line1\\n\\n\\n\\nline2")')
+  local result = child.lua_get('_result')
+  eq(result, "line1\n\nline2")
+end
+
+T['trim_whitespace()']['preserves single blank line'] = function()
+  child.lua('_result = Context.trim_whitespace("line1\\n\\nline2")')
+  local result = child.lua_get('_result')
+  eq(result, "line1\n\nline2")
+end
+
+T['trim_whitespace()']['preserves two blank lines'] = function()
+  child.lua('_result = Context.trim_whitespace("line1\\n\\n\\nline2")')
+  local result = child.lua_get('_result')
+  -- After trimming 3+ newlines to 2, we get line1\n\nline2
+  eq(result, "line1\n\nline2")
+end
+
 return T

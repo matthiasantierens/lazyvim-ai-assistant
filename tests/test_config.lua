@@ -121,14 +121,14 @@ end
 
 T['copilot getters'] = new_set()
 
-T['copilot getters']['get_copilot_autocomplete_model returns default'] = function()
+T['copilot getters']['get_copilot_autocomplete_model returns gpt-4o-mini'] = function()
   local result = child.lua_get('M.get_copilot_autocomplete_model()')
-  h.expect_match(result, 'claude')
+  eq(result, 'gpt-4o-mini')
 end
 
-T['copilot getters']['get_copilot_chat_model returns default'] = function()
+T['copilot getters']['get_copilot_chat_model returns gpt-4o-mini'] = function()
   local result = child.lua_get('M.get_copilot_chat_model()')
-  h.expect_match(result, 'sonnet')
+  eq(result, 'gpt-4o-mini')
 end
 
 -- =============================================================================
@@ -328,6 +328,158 @@ T['config validation']['accepts valid picker values'] = function()
   ]])
   local picker = child.lua_get('_picker')
   eq(picker, 'telescope')
+end
+
+-- =============================================================================
+-- v2.1.0: Enable/Disable functionality
+-- =============================================================================
+
+T['enable/disable'] = new_set()
+
+T['enable/disable']['is_enabled returns true by default'] = function()
+  local result = child.lua_get('M.is_enabled()')
+  eq(result, true)
+end
+
+T['enable/disable']['disable sets enabled to false'] = function()
+  child.lua('M.disable()')
+  local result = child.lua_get('M.is_enabled()')
+  eq(result, false)
+end
+
+T['enable/disable']['enable sets enabled to true'] = function()
+  child.lua('M.disable()')
+  child.lua('M.enable()')
+  local result = child.lua_get('M.is_enabled()')
+  eq(result, true)
+end
+
+T['enable/disable']['toggle switches state'] = function()
+  local initial = child.lua_get('M.is_enabled()')
+  eq(initial, true)
+  child.lua('M.toggle()')
+  local after_toggle = child.lua_get('M.is_enabled()')
+  eq(after_toggle, false)
+  child.lua('M.toggle()')
+  local after_second = child.lua_get('M.is_enabled()')
+  eq(after_second, true)
+end
+
+T['enable/disable']['setup with enabled=false disables AI'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({ enabled = false })
+    _enabled = M.is_enabled()
+  ]])
+  local enabled = child.lua_get('_enabled')
+  eq(enabled, false)
+end
+
+-- =============================================================================
+-- v2.1.0: Context limiting getters
+-- =============================================================================
+
+T['context limiting'] = new_set()
+
+T['context limiting']['get_max_context_lines returns default'] = function()
+  local result = child.lua_get('M.get_max_context_lines()')
+  eq(result, 500)
+end
+
+T['context limiting']['get_exclude_patterns returns default array'] = function()
+  local result = child.lua_get('M.get_exclude_patterns()')
+  h.expect_truthy(result)
+  h.expect_truthy(#result > 0)
+end
+
+T['context limiting']['get_max_buffer_lines returns default'] = function()
+  local result = child.lua_get('M.get_max_buffer_lines()')
+  eq(result, 1000)
+end
+
+T['context limiting']['get_trim_whitespace returns true by default'] = function()
+  local result = child.lua_get('M.get_trim_whitespace()')
+  eq(result, true)
+end
+
+T['context limiting']['max_context_lines can be overridden'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({ context = { max_context_lines = 1000 } })
+    _lines = M.get_max_context_lines()
+  ]])
+  local lines = child.lua_get('_lines')
+  eq(lines, 1000)
+end
+
+T['context limiting']['exclude_patterns can be overridden'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({ context = { exclude_patterns = { "*.test.js" } } })
+    _patterns = M.get_exclude_patterns()
+  ]])
+  local patterns = child.lua_get('_patterns')
+  eq(patterns[1], '*.test.js')
+end
+
+-- =============================================================================
+-- v2.1.0: Autocomplete config getters
+-- =============================================================================
+
+T['autocomplete config'] = new_set()
+
+T['autocomplete config']['get_autocomplete_context_window returns default'] = function()
+  local result = child.lua_get('M.get_autocomplete_context_window()')
+  eq(result, 4000)
+end
+
+T['autocomplete config']['get_autocomplete_n_completions returns default'] = function()
+  local result = child.lua_get('M.get_autocomplete_n_completions()')
+  eq(result, 1)
+end
+
+T['autocomplete config']['get_autocomplete_max_tokens returns default'] = function()
+  local result = child.lua_get('M.get_autocomplete_max_tokens()')
+  eq(result, 128)
+end
+
+T['autocomplete config']['autocomplete settings can be overridden'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({
+      autocomplete = {
+        context_window = 8000,
+        n_completions = 3,
+        max_tokens = 512
+      }
+    })
+    _ctx = M.get_autocomplete_context_window()
+    _n = M.get_autocomplete_n_completions()
+    _max = M.get_autocomplete_max_tokens()
+  ]])
+  eq(child.lua_get('_ctx'), 8000)
+  eq(child.lua_get('_n'), 3)
+  eq(child.lua_get('_max'), 512)
 end
 
 return T

@@ -1,5 +1,6 @@
 -- Context management for lazyvim-ai-assistant
 -- Provides file picker integration, project context, and smart context handling
+-- v2.1.0: Added context limiting (max_context_lines, exclude_patterns, trim_whitespace)
 
 local M = {}
 
@@ -15,6 +16,58 @@ M.project_types = {
   dotnet = { markers = { "*.csproj", "*.sln" }, name = ".NET" },
   php = { markers = { "composer.json" }, name = "PHP" },
 }
+
+--- Check if a filename matches any of the exclude patterns
+---@param filename string The filename to check
+---@param patterns table List of glob patterns to match against
+---@return boolean true if file should be excluded
+function M.should_exclude(filename, patterns)
+  if not patterns or #patterns == 0 then
+    return false
+  end
+
+  for _, pattern in ipairs(patterns) do
+    -- Convert glob pattern to Lua pattern
+    local lua_pattern = pattern
+      :gsub("([%.%-%+%[%]%(%)%$%^])", "%%%1")  -- Escape special Lua pattern chars
+      :gsub("%*", ".*")   -- Convert * to .*
+      :gsub("%?", ".")    -- Convert ? to .
+
+    -- Check both full path and basename
+    local basename = vim.fn.fnamemodify(filename, ":t")
+    if filename:match("^" .. lua_pattern .. "$") or basename:match("^" .. lua_pattern .. "$") then
+      return true
+    end
+  end
+
+  return false
+end
+
+--- Truncate content to max lines with indicator
+---@param content string The content to truncate
+---@param max_lines number|nil Maximum number of lines (nil = no limit)
+---@return string truncated content
+function M.truncate_lines(content, max_lines)
+  if not max_lines or max_lines <= 0 then
+    return content
+  end
+
+  local lines = vim.split(content, "\n")
+  if #lines <= max_lines then
+    return content
+  end
+
+  local truncated = table.concat(vim.list_slice(lines, 1, max_lines), "\n")
+  return truncated .. "\n\n-- [Truncated: showing first " .. max_lines .. " of " .. #lines .. " lines]"
+end
+
+--- Remove consecutive blank lines from content
+---@param content string The content to trim
+---@return string trimmed content
+function M.trim_whitespace(content)
+  -- Replace 3+ consecutive newlines with 2 newlines
+  return content:gsub("\n\n\n+", "\n\n")
+end
 
 --- Detect the project type based on marker files
 ---@return table|nil { type = string, name = string }
@@ -67,12 +120,19 @@ function M.get_project_structure(max_depth)
   return table.concat(lines, "\n")
 end
 
---- Read file content with size limit
+--- Read file content with size limit and optional line truncation
 ---@param filepath string
 ---@param max_size number|nil Maximum file size in bytes (default 100000)
 ---@return string|nil content, string|nil error
 function M.read_file(filepath, max_size)
   max_size = max_size or 100000
+
+  -- Check exclude patterns
+  local main = require("lazyvim-ai-assistant")
+  local exclude_patterns = main.get_exclude_patterns()
+  if M.should_exclude(filepath, exclude_patterns) then
+    return nil, "File excluded by pattern: " .. filepath
+  end
 
   local stat = vim.loop.fs_stat(filepath)
   if not stat then
@@ -90,6 +150,17 @@ function M.read_file(filepath, max_size)
 
   local content = file:read("*a")
   file:close()
+
+  -- Apply line truncation if configured
+  local max_lines = main.get_max_context_lines()
+  if max_lines then
+    content = M.truncate_lines(content, max_lines)
+  end
+
+  -- Apply whitespace trimming if configured
+  if main.get_trim_whitespace() then
+    content = M.trim_whitespace(content)
+  end
 
   return content
 end
@@ -168,6 +239,25 @@ end
 ---@param callback function Called with list of selected file paths
 function M.pick_files(callback)
   local picker = M.get_available_picker()
+  local main = require("lazyvim-ai-assistant")
+  local exclude_patterns = main.get_exclude_patterns()
+
+  -- Filter function to exclude unwanted files
+  local function filter_excluded(files)
+    if not exclude_patterns or #exclude_patterns == 0 then
+      return files
+    end
+
+    local filtered = {}
+    for _, file in ipairs(files) do
+      if not M.should_exclude(file, exclude_patterns) then
+        table.insert(filtered, file)
+      else
+        vim.notify("Excluded from context: " .. vim.fn.fnamemodify(file, ":t"), vim.log.levels.DEBUG)
+      end
+    end
+    return filtered
+  end
 
   if picker == "telescope" then
     require("telescope.builtin").find_files({
@@ -181,7 +271,8 @@ function M.pick_files(callback)
           local selection = action_state.get_selected_entry()
           actions.close(prompt_bufnr)
           if selection then
-            callback({ selection.value or selection[1] })
+            local files = filter_excluded({ selection.value or selection[1] })
+            callback(files)
           end
         end)
 
@@ -194,7 +285,8 @@ function M.pick_files(callback)
       actions = {
         ["default"] = function(selected)
           if selected and #selected > 0 then
-            callback(selected)
+            local files = filter_excluded(selected)
+            callback(files)
           end
         end,
       },

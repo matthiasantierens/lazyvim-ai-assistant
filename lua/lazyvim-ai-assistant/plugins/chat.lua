@@ -1,6 +1,7 @@
 -- CodeCompanion configuration
 -- Chat and inline code assistance with LM Studio or Copilot fallback
 -- v2.0.0: Added Plan/Build mode, tool groups, and extended prompt library
+-- v2.1.0: Added is_enabled check, keybinding for toggle, buffer truncation
 
 --- Get config values from central module
 local function get_config()
@@ -10,6 +11,31 @@ local function get_config()
     lmstudio_model = main.get_lmstudio_model(),
     copilot_chat_model = main.get_copilot_chat_model(),
   }
+end
+
+--- Check if AI assistant is enabled
+local function is_ai_enabled()
+  local main = require("lazyvim-ai-assistant")
+  return main.is_enabled()
+end
+
+--- Truncate buffer content for context (v2.1.0)
+---@param content string Buffer content
+---@return string Truncated content
+local function truncate_buffer_content(content)
+  local main = require("lazyvim-ai-assistant")
+  local ctx = require("lazyvim-ai-assistant.context")
+
+  local max_lines = main.get_max_buffer_lines()
+  if max_lines then
+    content = ctx.truncate_lines(content, max_lines)
+  end
+
+  if main.get_trim_whitespace() then
+    content = ctx.trim_whitespace(content)
+  end
+
+  return content
 end
 
 --- Get the prompt library with all built-in prompts
@@ -643,10 +669,26 @@ return {
       })
     end,
     keys = {
+      -- v2.1.0: AI Enable/Disable toggle
+      {
+        "<leader>aE",
+        function()
+          require("lazyvim-ai-assistant").toggle()
+        end,
+        mode = "n",
+        desc = "Toggle AI on/off (save tokens)",
+      },
+
       -- Chat keymaps
       {
         "<leader>aa",
         function()
+          -- v2.1.0: Check if AI is enabled
+          if not is_ai_enabled() then
+            vim.notify("AI Assistant is disabled. Use <leader>aE or :AIEnable to enable.", vim.log.levels.WARN)
+            return
+          end
+
           local main = require("lazyvim-ai-assistant")
           local chat_cfg = main.get_config().chat or {}
           local auto_include = chat_cfg.auto_include_buffer ~= false
@@ -714,6 +756,12 @@ return {
       {
         "<leader>aF",
         function()
+          -- v2.1.0: Check if AI is enabled
+          if not is_ai_enabled() then
+            vim.notify("AI Assistant is disabled. Use <leader>aE or :AIEnable to enable.", vim.log.levels.WARN)
+            return
+          end
+
           local ctx = require("lazyvim-ai-assistant.context")
           ctx.pick_files(function(files)
             if #files == 0 then

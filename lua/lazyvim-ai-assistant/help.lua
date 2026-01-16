@@ -1,12 +1,16 @@
 -- Help display for AI keybindings
 -- Shows all available keybindings in a floating window
 -- v2.0.0: Added Plan/Build mode, new prompts, context, and session keybindings
+-- v2.1.0: Added enable/disable toggle and cost-saving features
 
 local M = {}
 
 --- Show help in a floating window
 function M.show()
   -- Safely require modules
+  local main_ok, main = pcall(require, "lazyvim-ai-assistant")
+  local ai_enabled = main_ok and main.is_enabled() or true
+
   local ok, lmstudio = pcall(require, "lazyvim-ai-assistant.lmstudio")
   local is_lmstudio = ok and lmstudio.is_running() or false
 
@@ -15,14 +19,26 @@ function M.show()
   local mode_display = mode == "build" and "BUILD" or "PLAN"
 
   local backend_status = is_lmstudio and "LM Studio (local)" or "Copilot (cloud)"
+  local enabled_status = ai_enabled and "ENABLED" or "DISABLED (saving tokens)"
 
   local lines = {
-    "                    AI Assistant Keybindings (v2.0)                ",
+    "                    AI Assistant Keybindings (v2.1)                ",
     "====================================================================",
     "",
     " STATUS",
+    "   AI:      " .. enabled_status,
     "   Backend: " .. backend_status,
     "   Mode:    " .. mode_display .. (mode == "build" and " (full tools)" or " (read-only)"),
+    "",
+    "====================================================================",
+    " ENABLE/DISABLE (v2.1 - Save Tokens)",
+    "====================================================================",
+    "   <leader>aE   Toggle AI on/off (saves tokens when off)",
+    "",
+    "   :AIEnable    Enable AI assistant",
+    "   :AIDisable   Disable AI assistant (saves tokens)",
+    "   :AIToggle    Toggle AI on/off",
+    "   :AIStatus    Show current AI status",
     "",
     "====================================================================",
     " AGENT MODE (Plan/Build)",
@@ -107,6 +123,17 @@ function M.show()
     "   :AIPrompts reload    Reload prompts from .ai/prompts/",
     "   :AIPrompts init      Create example prompt file",
     "   :AIPrompts dir       Show prompts directory",
+    "",
+    "====================================================================",
+    " COST-SAVING CONFIG OPTIONS (v2.1)",
+    "====================================================================",
+    "   enabled = false           Disable all AI features",
+    "   context.max_context_lines = 500   Truncate file context",
+    "   context.exclude_patterns = {...}  Exclude files from context",
+    "   chat.max_buffer_lines = 1000      Truncate buffer in chat",
+    "   autocomplete.context_window = 4000  Reduce autocomplete context",
+    "   autocomplete.n_completions = 1    Request fewer completions",
+    "   autocomplete.max_tokens = 128     Limit completion length",
     "",
     "====================================================================",
     " OTHER COMMANDS",
