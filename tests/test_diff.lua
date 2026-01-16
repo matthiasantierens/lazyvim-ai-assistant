@@ -196,6 +196,23 @@ T['accept_hunk()']['function exists'] = function()
 end
 
 -- =============================================================================
+-- reject_hunk()
+-- =============================================================================
+
+T['reject_hunk()'] = new_set()
+
+T['reject_hunk()']['function exists'] = function()
+  local exists = child.lua_get('type(Diff.reject_hunk) == "function"')
+  eq(exists, true)
+end
+
+T['reject_hunk()']['does not error when called'] = function()
+  child.lua('_ok = pcall(Diff.reject_hunk)')
+  local ok = child.lua_get('_ok')
+  eq(ok, true)
+end
+
+-- =============================================================================
 -- setup()
 -- =============================================================================
 

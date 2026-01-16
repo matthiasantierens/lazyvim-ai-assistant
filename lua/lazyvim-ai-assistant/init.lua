@@ -52,10 +52,58 @@ M.config = {
   },
 }
 
+--- Validate configuration values and warn on invalid options
+---@param opts table|nil User config options
+---@return table Validated config
+local function validate_config(opts)
+  if not opts then
+    return {}
+  end
+
+  -- Validate buffer_sync_mode
+  if opts.chat and opts.chat.buffer_sync_mode then
+    local valid = { diff = true, all = true }
+    if not valid[opts.chat.buffer_sync_mode] then
+      vim.notify(
+        "[lazyvim-ai-assistant] Invalid buffer_sync_mode '" .. tostring(opts.chat.buffer_sync_mode) .. "'. Using 'diff'.",
+        vim.log.levels.WARN
+      )
+      opts.chat.buffer_sync_mode = "diff"
+    end
+  end
+
+  -- Validate picker
+  if opts.context and opts.context.picker then
+    local valid = { auto = true, telescope = true, fzf = true }
+    if not valid[opts.context.picker] then
+      vim.notify(
+        "[lazyvim-ai-assistant] Invalid picker '" .. tostring(opts.context.picker) .. "'. Using 'auto'.",
+        vim.log.levels.WARN
+      )
+      opts.context.picker = "auto"
+    end
+  end
+
+  -- Validate agent default_mode
+  if opts.agent and opts.agent.default_mode then
+    local valid = { build = true, plan = true }
+    if not valid[opts.agent.default_mode] then
+      vim.notify(
+        "[lazyvim-ai-assistant] Invalid default_mode '" .. tostring(opts.agent.default_mode) .. "'. Using 'build'.",
+        vim.log.levels.WARN
+      )
+      opts.agent.default_mode = "build"
+    end
+  end
+
+  return opts
+end
+
 --- Setup the AI assistant with optional configuration
 ---@param opts table|nil Configuration options
 function M.setup(opts)
-  M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+  opts = validate_config(opts or {})
+  M.config = vim.tbl_deep_extend("force", M.config, opts)
 
   -- Initialize submodules that need setup
   local agent = require("lazyvim-ai-assistant.agent")

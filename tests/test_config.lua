@@ -248,4 +248,86 @@ T['agent mode']['is_plan_mode returns false by default'] = function()
   eq(result, false)
 end
 
+-- =============================================================================
+-- Config validation
+-- =============================================================================
+
+T['config validation'] = new_set()
+
+T['config validation']['corrects invalid buffer_sync_mode'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    -- Mock submodules to avoid full setup
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({ chat = { buffer_sync_mode = "invalid_mode" } })
+    _mode = M.get_chat_buffer_sync_mode()
+  ]])
+  local mode = child.lua_get('_mode')
+  eq(mode, 'diff')
+end
+
+T['config validation']['corrects invalid picker'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({ context = { picker = "invalid_picker" } })
+    _picker = M.get_config().context.picker
+  ]])
+  local picker = child.lua_get('_picker')
+  eq(picker, 'auto')
+end
+
+T['config validation']['corrects invalid agent default_mode'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({ agent = { default_mode = "invalid_mode" } })
+    _mode = M.get_config().agent.default_mode
+  ]])
+  local mode = child.lua_get('_mode')
+  eq(mode, 'build')
+end
+
+T['config validation']['accepts valid buffer_sync_mode values'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({ chat = { buffer_sync_mode = "all" } })
+    _mode = M.get_chat_buffer_sync_mode()
+  ]])
+  local mode = child.lua_get('_mode')
+  eq(mode, 'all')
+end
+
+T['config validation']['accepts valid picker values'] = function()
+  child.lua([[
+    package.loaded["lazyvim-ai-assistant"] = nil
+    package.loaded["lazyvim-ai-assistant.agent"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.context"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.prompts"] = { setup = function() end, create_commands = function() end }
+    package.loaded["lazyvim-ai-assistant.diff"] = { setup = function() end, create_commands = function() end, create_keymaps = function() end }
+    local M = require("lazyvim-ai-assistant")
+    M.setup({ context = { picker = "telescope" } })
+    _picker = M.get_config().context.picker
+  ]])
+  local picker = child.lua_get('_picker')
+  eq(picker, 'telescope')
+end
+
 return T

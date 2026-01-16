@@ -44,8 +44,8 @@ function M.get_project_structure(max_depth)
 
   -- Use find command to get directory structure
   local cmd = string.format("find %s -maxdepth %d -type f -name '*.lua' -o -type f -name '*.py' -o -type f -name '*.js' -o -type f -name '*.ts' -o -type f -name '*.go' -o -type f -name '*.rs' 2>/dev/null | head -50", vim.fn.shellescape(cwd), max_depth)
-  local handle = io.popen(cmd)
-  if handle then
+  local ok, handle = pcall(io.popen, cmd)
+  if ok and handle then
     local result = handle:read("*a")
     handle:close()
 
@@ -100,8 +100,8 @@ function M.get_git_summary()
   local lines = { "Git Status:", "```" }
 
   -- Check if in git repo
-  local handle = io.popen("git rev-parse --is-inside-work-tree 2>/dev/null")
-  if handle then
+  local ok, handle = pcall(io.popen, "git rev-parse --is-inside-work-tree 2>/dev/null")
+  if ok and handle then
     local result = handle:read("*a"):gsub("%s+", "")
     handle:close()
     if result ~= "true" then
@@ -112,16 +112,16 @@ function M.get_git_summary()
   end
 
   -- Get current branch
-  handle = io.popen("git branch --show-current 2>/dev/null")
-  if handle then
+  ok, handle = pcall(io.popen, "git branch --show-current 2>/dev/null")
+  if ok and handle then
     local branch = handle:read("*a"):gsub("%s+", "")
     handle:close()
     table.insert(lines, "Branch: " .. branch)
   end
 
   -- Get status summary
-  handle = io.popen("git status --short 2>/dev/null | head -20")
-  if handle then
+  ok, handle = pcall(io.popen, "git status --short 2>/dev/null | head -20")
+  if ok and handle then
     local status = handle:read("*a")
     handle:close()
     if status and #status > 0 then

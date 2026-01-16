@@ -48,8 +48,8 @@ lazyvim-ai-assistant/
 | `agent.lua` | Plan/Build mode: `set_mode()`, `toggle_mode()` |
 | `lmstudio.lua` | Connection check: `is_running()`, `check()` |
 | `context.lua` | `pick_files()`, `get_project_structure()` |
-| `prompts.lua` | `load_from_directory()`, `parse_prompt()` |
-| `diff.lua` | `accept_hunk()`, `create_snapshot()` |
+| `prompts.lua` | `load_prompts()`, `parse_front_matter()` |
+| `diff.lua` | `accept_hunk()`, `reject_hunk()`, `save_snapshot()` |
 
 ## Configuration Structure
 

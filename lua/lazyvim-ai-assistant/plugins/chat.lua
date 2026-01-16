@@ -495,6 +495,41 @@ return {
                   default_params = use_lmstudio and "watch" or "pin",
                 },
               },
+              -- #selection - insert last visual selection
+              ["selection"] = {
+                callback = function()
+                  local ctx = require("lazyvim-ai-assistant.context")
+                  local selection = ctx.get_visual_selection()
+                  if selection then
+                    return "Selected code:\n```\n" .. selection .. "\n```"
+                  end
+                  return "No active selection"
+                end,
+                description = "Insert current visual selection",
+                opts = { contains_code = true },
+              },
+              -- #git - insert git status summary
+              ["git"] = {
+                callback = function()
+                  local ctx = require("lazyvim-ai-assistant.context")
+                  return ctx.get_git_summary()
+                end,
+                description = "Insert git status summary",
+                opts = { contains_code = false },
+              },
+            },
+            -- Custom slash commands
+            slash_commands = {
+              -- /project - insert project structure
+              ["project"] = {
+                callback = function(chat)
+                  local ctx = require("lazyvim-ai-assistant.context")
+                  local structure = ctx.get_project_structure()
+                  chat:add_message({ role = "user", content = structure }, { visible = true })
+                end,
+                description = "Insert project structure",
+                opts = { contains_code = true },
+              },
             },
             -- Tool groups for agentic workflows
             tools = {
@@ -593,7 +628,9 @@ return {
       })
 
       -- Set up autocmd to update chat based on mode changes
+      local augroup = vim.api.nvim_create_augroup("LazyVimAIAssistant", { clear = true })
       vim.api.nvim_create_autocmd("User", {
+        group = augroup,
         pattern = "AIAgentModeChanged",
         callback = function(ev)
           local mode = ev.data and ev.data.mode
@@ -671,6 +708,43 @@ return {
         end,
         mode = "n",
         desc = "Switch to Plan mode",
+      },
+
+      -- Context management
+      {
+        "<leader>aF",
+        function()
+          local ctx = require("lazyvim-ai-assistant.context")
+          ctx.pick_files(function(files)
+            if #files == 0 then
+              return
+            end
+            local codecompanion = require("codecompanion")
+            local chat = codecompanion.last_chat()
+            if not chat then
+              -- Open new chat first, then add files
+              vim.cmd("CodeCompanionChat")
+              vim.defer_fn(function()
+                chat = codecompanion.last_chat()
+                if chat then
+                  for _, file in ipairs(files) do
+                    local content = ctx.format_file_for_context(file)
+                    chat:add_message({ role = "user", content = content }, { visible = false })
+                  end
+                  vim.notify("Added " .. #files .. " file(s) to context", vim.log.levels.INFO)
+                end
+              end, 200)
+            else
+              for _, file in ipairs(files) do
+                local content = ctx.format_file_for_context(file)
+                chat:add_message({ role = "user", content = content }, { visible = false })
+              end
+              vim.notify("Added " .. #files .. " file(s) to context", vim.log.levels.INFO)
+            end
+          end)
+        end,
+        mode = { "n", "v" },
+        desc = "Add file(s) to context",
       },
 
       -- Help

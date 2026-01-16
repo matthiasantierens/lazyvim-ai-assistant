@@ -125,6 +125,20 @@ function M.accept_hunk()
   vim.notify("Hunk-based accept requires mini.diff", vim.log.levels.INFO)
 end
 
+--- Reject current hunk only
+--- Reverts the current hunk to its original state
+function M.reject_hunk()
+  -- Try mini.diff reset
+  local ok, mini_diff = pcall(require, "mini.diff")
+  if ok and mini_diff.do_hunks then
+    pcall(mini_diff.do_hunks, vim.api.nvim_get_current_buf(), "reset")
+    return
+  end
+
+  -- Fallback: try native undo (silently fail if nothing to undo)
+  pcall(vim.cmd, "silent! undo")
+end
+
 --- Setup diff module
 ---@param config table|nil
 function M.setup(config)
@@ -175,6 +189,10 @@ function M.create_keymaps()
   vim.keymap.set("n", "<leader>dh", function()
     M.accept_hunk()
   end, vim.tbl_extend("force", opts, { desc = "Accept current hunk" }))
+
+  vim.keymap.set("n", "<leader>dR", function()
+    M.reject_hunk()
+  end, vim.tbl_extend("force", opts, { desc = "Reject current hunk" }))
 
   vim.keymap.set("n", "<leader>du", function()
     M.undo_last_change()

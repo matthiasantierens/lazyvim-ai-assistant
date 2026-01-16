@@ -181,6 +181,7 @@ Code actions now show inline diffs by default. Use uppercase variants for chat d
 | `<leader>da` | Accept all diff changes |
 | `<leader>dr` | Reject all diff changes |
 | `<leader>dh` | Accept current hunk |
+| `<leader>dR` | Reject current hunk |
 | `<leader>dn` | Next diff hunk |
 | `<leader>dp` | Previous diff hunk |
 | `<leader>du` | Undo last AI change |
@@ -383,15 +384,15 @@ tests/
 ├── test_agent.lua       # Agent mode tests (34 tests)
 ├── test_prompts.lua     # Prompt parsing tests (18 tests)
 ├── test_context.lua     # Context management tests (22 tests)
-├── test_diff.lua        # Diff/snapshot tests (24 tests)
-├── test_config.lua      # Configuration tests (23 tests)
+├── test_diff.lua        # Diff/snapshot tests (26 tests)
+├── test_config.lua      # Configuration tests (34 tests)
 └── test_integration.lua # Integration tests (25 tests)
 
 scripts/
 └── minimal_init.lua     # Minimal Neovim config for testing
 ```
 
-Total: **146 tests** covering all v2.0.0 modules.
+Total: **159 tests** covering all v2.0.0 modules.
 
 ## Troubleshooting
 
@@ -448,7 +449,7 @@ lmstudio.lua          → LM Studio connection
 **Development**:
 ```bash
 make deps    # Install test dependencies
-make test    # Run all 152 tests
+make test    # Run all 159 tests
 ```
 
 **Conventions**:

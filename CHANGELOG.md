@@ -76,6 +76,7 @@ All notable changes to lazyvim-ai-assistant will be documented in this file.
 - `<leader>ao` - Optimize code (visual)
 - `<leader>aD` - Debug code (normal/visual)
 - `<leader>dh` - Accept current hunk
+- `<leader>dR` - Reject current hunk
 - `<leader>dn` - Next diff hunk
 - `<leader>dp` - Previous diff hunk
 - `<leader>du` - Undo last AI change
@@ -116,6 +117,12 @@ history = {
 - Expanded help window with all new keybindings
 - Updated lualine component with mode indicator
 - Tool groups for agentic workflows in CodeCompanion
+- Config validation with user-friendly warnings for invalid values
+- Error handling improvements: `io.popen` calls wrapped in pcall
+- Autocmds use augroup for clean hot-reloading
+- CodeCompanion variables: `#selection`, `#git`
+- CodeCompanion slash command: `/project`
+- Comprehensive test suite: 159 tests across 6 test files
 
 ---
 
