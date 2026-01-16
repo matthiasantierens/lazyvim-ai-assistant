@@ -1,13 +1,13 @@
 -- Autocomplete configuration
 -- LM Studio via minuet.nvim with Copilot fallback
 
---- Get config values
+--- Get config values from central module
 local function get_config()
-  local config = _G.lazyvim_ai_assistant_config or {}
+  local main = require("lazyvim-ai-assistant")
   return {
-    lmstudio_url = (config.lmstudio or {}).url or "http://localhost:1234",
-    lmstudio_model = (config.lmstudio or {}).model or "qwen2.5-coder-14b-instruct-mlx",
-    copilot_model = (config.copilot or {}).autocomplete_model or "claude-haiku-4.5",
+    lmstudio_url = main.get_lmstudio_url(),
+    lmstudio_model = main.get_lmstudio_model(),
+    copilot_model = main.get_copilot_autocomplete_model(),
   }
 end
 

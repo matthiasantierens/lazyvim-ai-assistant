@@ -1,13 +1,13 @@
 -- CodeCompanion configuration
 -- Chat and inline code assistance with LM Studio or Copilot fallback
 
---- Get config values
+--- Get config values from central module
 local function get_config()
-  local config = _G.lazyvim_ai_assistant_config or {}
+  local main = require("lazyvim-ai-assistant")
   return {
-    lmstudio_url = (config.lmstudio or {}).url or "http://localhost:1234",
-    lmstudio_model = (config.lmstudio or {}).model or "qwen2.5-coder-14b-instruct-mlx",
-    copilot_chat_model = (config.copilot or {}).chat_model or "claude-sonnet-4.5",
+    lmstudio_url = main.get_lmstudio_url(),
+    lmstudio_model = main.get_lmstudio_model(),
+    copilot_chat_model = main.get_copilot_chat_model(),
   }
 end
 
@@ -20,7 +20,6 @@ return {
     },
     config = function()
       local lmstudio = require("lazyvim-ai-assistant.lmstudio")
-      local help = require("lazyvim-ai-assistant.help")
       local cfg = get_config()
       local use_lmstudio = lmstudio.is_running()
 

@@ -5,16 +5,15 @@ local M = {}
 
 --- Show help in a floating window
 function M.show()
-  local lmstudio = require("lazyvim-ai-assistant.lmstudio")
-  local is_lmstudio = lmstudio.is_running()
+  -- Safely require lmstudio module
+  local ok, lmstudio = pcall(require, "lazyvim-ai-assistant.lmstudio")
+  local is_lmstudio = ok and lmstudio.is_running() or false
 
-  local backend_status = is_lmstudio
-      and "LM Studio (local)"
-    or "Copilot (cloud)"
+  local backend_status = is_lmstudio and "LM Studio (local)" or "Copilot (cloud)"
 
   local lines = {
     "                    AI Assistant Keybindings                     ",
-    "─────────────────────────────────────────────────────────────────",
+    "-------------------------------------------------------------------",
     "",
     " BACKEND STATUS",
     "   Current: " .. backend_status,
@@ -22,9 +21,9 @@ function M.show()
     "   LM Studio offline  -> Autocomplete: Copilot, Chat: Copilot",
     "   :LMStudioReconnect   Re-check connection (restart nvim after)",
     "",
-    "─────────────────────────────────────────────────────────────────",
+    "-------------------------------------------------------------------",
     " AUTOCOMPLETE (Copilot / Minuet)",
-    "─────────────────────────────────────────────────────────────────",
+    "-------------------------------------------------------------------",
     "   <S-Tab>    Accept suggestion",
     "   <A-a>      Accept suggestion (alternative)",
     "   <A-l>      Accept line only",
@@ -33,9 +32,9 @@ function M.show()
     "   <A-e>      Dismiss suggestion",
     "   <A-y>      Trigger minuet completion (blink.cmp)",
     "",
-    "─────────────────────────────────────────────────────────────────",
+    "-------------------------------------------------------------------",
     " CHAT (CodeCompanion)",
-    "─────────────────────────────────────────────────────────────────",
+    "-------------------------------------------------------------------",
     "   <leader>aa   Toggle chat (normal) / Chat with selection (visual)",
     "   <leader>aA   Add selection to existing chat (visual)",
     "   <leader>ai   Inline prompt (normal) / with selection (visual)",
@@ -44,24 +43,28 @@ function M.show()
     "   <leader>af   Fix code (visual)",
     "   <leader>ah   Show this help",
     "",
-    "─────────────────────────────────────────────────────────────────",
+    "-------------------------------------------------------------------",
     " DIFF (Inline code changes)",
-    "─────────────────────────────────────────────────────────────────",
+    "-------------------------------------------------------------------",
     "   <leader>da   Accept diff change",
     "   <leader>dr   Reject diff change",
     "   <leader>dD   Super Diff view (all changes across files)",
     "",
-    "─────────────────────────────────────────────────────────────────",
+    "-------------------------------------------------------------------",
     " COMMANDS",
-    "─────────────────────────────────────────────────────────────────",
+    "-------------------------------------------------------------------",
     "   :LMStudioReconnect   Re-check LM Studio connection",
     "   :Copilot auth        Authenticate with GitHub Copilot",
     "",
     "                    Press 'q' or <Esc> to close                  ",
   }
 
-  -- Calculate window dimensions
-  local width = 69
+  -- Calculate window dimensions dynamically
+  local width = 0
+  for _, line in ipairs(lines) do
+    width = math.max(width, vim.fn.strdisplaywidth(line))
+  end
+  width = width + 2 -- Add some padding
   local height = #lines
   local row = math.floor((vim.o.lines - height) / 2)
   local col = math.floor((vim.o.columns - width) / 2)

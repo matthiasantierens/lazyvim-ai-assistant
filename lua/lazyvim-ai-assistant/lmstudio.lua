@@ -9,19 +9,25 @@ M._is_running = nil
 --- Get the LM Studio URL from config or use default
 ---@return string
 local function get_url()
-  local config = _G.lazyvim_ai_assistant_config or {}
-  local lmstudio = config.lmstudio or {}
-  return lmstudio.url or "http://localhost:1234"
+  local ok, main = pcall(require, "lazyvim-ai-assistant")
+  if ok then
+    return main.get_lmstudio_url()
+  end
+  return "http://localhost:1234"
 end
 
 --- Check if LM Studio is responding
---- Uses a quick curl request with 1 second timeout
+--- Uses a quick curl request with 300ms timeout to minimize startup delay
 ---@return boolean
 function M.check()
   local url = get_url()
-  local handle = io.popen(
-    "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 1 " .. url .. "/v1/models 2>/dev/null"
+  -- Sanitize URL to prevent shell injection
+  local safe_url = vim.fn.shellescape(url .. "/v1/models")
+  local cmd = string.format(
+    "curl -s -o /dev/null -w '%%{http_code}' --connect-timeout 0.3 %s 2>/dev/null",
+    safe_url
   )
+  local handle = io.popen(cmd)
   if handle then
     local result = handle:read("*a")
     handle:close()
