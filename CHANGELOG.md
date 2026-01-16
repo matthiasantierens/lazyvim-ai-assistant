@@ -45,6 +45,7 @@ All notable changes to lazyvim-ai-assistant will be documented in this file.
 
 ### Fixed
 - Fixed CodeCompanion adapter registration for updated API (adapters now under `adapters.http`)
+- Fixed prompt library format for CodeCompanion API change (`strategy` → `interaction`, `short_name` → `alias`)
 
 ### New Built-in Prompts
 - `/refactor` - Refactor selected code

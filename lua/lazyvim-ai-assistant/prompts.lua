@@ -80,11 +80,11 @@ function M.load_prompt_file(filepath)
 
   -- Build CodeCompanion prompt structure
   local prompt = {
-    strategy = metadata.strategy or "chat",
+    interaction = metadata.interaction or metadata.strategy or "chat",
     description = metadata.description or metadata.name,
     opts = {
       is_slash_cmd = true,
-      short_name = metadata.alias or metadata.name:lower():gsub("%s+", "_"),
+      alias = metadata.alias or metadata.name:lower():gsub("%s+", "_"),
       auto_submit = metadata.auto_submit ~= false, -- Default true
     },
     prompts = {
@@ -152,7 +152,7 @@ function M.load_prompts()
   for _, filepath in ipairs(files) do
     local prompt = M.load_prompt_file(filepath)
     if prompt then
-      prompts[prompt.opts.short_name] = prompt
+      prompts[prompt.opts.alias] = prompt
     end
   end
 

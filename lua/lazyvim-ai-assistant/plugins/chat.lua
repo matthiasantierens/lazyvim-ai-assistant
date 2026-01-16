@@ -17,12 +17,12 @@ local function get_prompt_library()
   return {
     -- Existing prompts
     ["Code Review"] = {
-      strategy = "chat",
+      interaction = "chat",
       description = "Review code for bugs, issues, and improvements",
       opts = {
         index = 1,
         is_slash_cmd = true,
-        short_name = "review",
+        alias = "review",
         auto_submit = true,
       },
       prompts = {
@@ -51,12 +51,12 @@ Be concise but thorough. Focus on actionable feedback.]],
 
     -- New prompts for v2.0.0
     ["Refactor"] = {
-      strategy = "chat",
+      interaction = "chat",
       description = "Refactor selected code for better quality",
       opts = {
         index = 2,
         is_slash_cmd = true,
-        short_name = "refactor",
+        alias = "refactor",
         auto_submit = true,
       },
       prompts = {
@@ -85,12 +85,12 @@ Explain the changes you're making and why they improve the code.]],
     },
 
     ["Write Tests"] = {
-      strategy = "chat",
+      interaction = "chat",
       description = "Generate tests for selected code",
       opts = {
         index = 3,
         is_slash_cmd = true,
-        short_name = "test",
+        alias = "test",
         auto_submit = true,
       },
       prompts = {
@@ -122,12 +122,12 @@ Generate tests that are maintainable and clearly document expected behavior.]],
     },
 
     ["Document"] = {
-      strategy = "chat",
+      interaction = "chat",
       description = "Add documentation to selected code",
       opts = {
         index = 4,
         is_slash_cmd = true,
-        short_name = "doc",
+        alias = "doc",
         auto_submit = true,
       },
       prompts = {
@@ -161,12 +161,12 @@ Return the code with added documentation.]],
     },
 
     ["Optimize"] = {
-      strategy = "chat",
+      interaction = "chat",
       description = "Optimize code for performance",
       opts = {
         index = 5,
         is_slash_cmd = true,
-        short_name = "optimize",
+        alias = "optimize",
         auto_submit = true,
       },
       prompts = {
@@ -197,12 +197,12 @@ Only suggest optimizations that provide meaningful improvements.]],
     },
 
     ["Debug"] = {
-      strategy = "chat",
+      interaction = "chat",
       description = "Help debug code issues",
       opts = {
         index = 6,
         is_slash_cmd = true,
-        short_name = "debug",
+        alias = "debug",
         auto_submit = false, -- Don't auto-submit so user can describe the issue
       },
       prompts = {
