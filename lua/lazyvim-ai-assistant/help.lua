@@ -1,29 +1,60 @@
 -- Help display for AI keybindings
 -- Shows all available keybindings in a floating window
+-- v2.0.0: Added Plan/Build mode, new prompts, context, and session keybindings
+-- v2.1.0: Added enable/disable toggle and cost-saving features
 
 local M = {}
 
 --- Show help in a floating window
 function M.show()
-  -- Safely require lmstudio module
+  -- Safely require modules
+  local main_ok, main = pcall(require, "lazyvim-ai-assistant")
+  local ai_enabled = main_ok and main.is_enabled() or true
+
   local ok, lmstudio = pcall(require, "lazyvim-ai-assistant.lmstudio")
   local is_lmstudio = ok and lmstudio.is_running() or false
 
+  local agent_ok, agent = pcall(require, "lazyvim-ai-assistant.agent")
+  local mode = agent_ok and agent.get_mode() or "build"
+  local mode_display = mode == "build" and "BUILD" or "PLAN"
+
   local backend_status = is_lmstudio and "LM Studio (local)" or "Copilot (cloud)"
+  local enabled_status = ai_enabled and "ENABLED" or "DISABLED (saving tokens)"
 
   local lines = {
-    "                    AI Assistant Keybindings                     ",
-    "-------------------------------------------------------------------",
+    "                    AI Assistant Keybindings (v2.1)                ",
+    "====================================================================",
     "",
-    " BACKEND STATUS",
-    "   Current: " .. backend_status,
-    "   LM Studio running  -> Autocomplete: Minuet, Chat: LM Studio",
-    "   LM Studio offline  -> Autocomplete: Copilot, Chat: Copilot",
-    "   :LMStudioReconnect   Re-check connection (restart nvim after)",
+    " STATUS",
+    "   AI:      " .. enabled_status,
+    "   Backend: " .. backend_status,
+    "   Mode:    " .. mode_display .. (mode == "build" and " (full tools)" or " (read-only)"),
     "",
-    "-------------------------------------------------------------------",
+    "====================================================================",
+    " ENABLE/DISABLE (v2.1 - Save Tokens)",
+    "====================================================================",
+    "   <leader>aE   Toggle AI on/off (saves tokens when off)",
+    "",
+    "   :AIEnable    Enable AI assistant",
+    "   :AIDisable   Disable AI assistant (saves tokens)",
+    "   :AIToggle    Toggle AI on/off",
+    "   :AIStatus    Show current AI status",
+    "",
+    "====================================================================",
+    " AGENT MODE (Plan/Build)",
+    "====================================================================",
+    "   <Tab>        Toggle Plan/Build mode (in chat buffer)",
+    "   <leader>ab   Switch to Build mode (full tool access)",
+    "   <leader>ap   Switch to Plan mode (read-only analysis)",
+    "",
+    "   :AIBuildMode   Switch to Build mode",
+    "   :AIPlanMode    Switch to Plan mode",
+    "   :AIToggleMode  Toggle between modes",
+    "   :AIMode        Show current mode",
+    "",
+    "====================================================================",
     " AUTOCOMPLETE (Copilot / Minuet)",
-    "-------------------------------------------------------------------",
+    "====================================================================",
     "   <S-Tab>    Accept suggestion",
     "   <A-a>      Accept suggestion (alternative)",
     "   <A-l>      Accept line only",
@@ -32,31 +63,87 @@ function M.show()
     "   <A-e>      Dismiss suggestion",
     "   <A-y>      Trigger minuet completion (blink.cmp)",
     "",
-    "-------------------------------------------------------------------",
-    " CHAT (CodeCompanion)",
-    "-------------------------------------------------------------------",
-    "   <leader>aa   Toggle chat (normal) / Chat with selection (visual)",
-    "   <leader>aA   Add selection to existing chat (visual)",
-    "   <leader>ai   Inline prompt (normal) / with selection (visual)",
-    "   <leader>ar   Review code (visual)",
-    "   <leader>ae   Explain code (visual)",
-    "   <leader>af   Fix code (visual)",
-    "   <leader>ah   Show this help",
+"====================================================================",
+" CHAT (CodeCompanion)",
+"====================================================================",
+"   <leader>aa   Toggle chat (includes current file) (n)",
+"   <leader>aa   Chat with selection (v)",
+"   <leader>an   New chat (no file context)",
+"   <leader>aA   Add selection to existing chat (v)",
+"   <leader>ai   Inline prompt (n) / with selection (v)",
+"   <leader>ah   Show this help",
+"",
+"====================================================================",
+" CODE ACTIONS (visual mode)",
+"====================================================================",
+"",
+" Inline (shows diff in file):    Chat (opens discussion):",
+"   <leader>ao  Optimize            <leader>aO  Optimize",
+"   <leader>af  Fix code",
+"   <leader>ad  Document",
+"   <leader>at  Write tests         <leader>aT  Write tests",
+"   <leader>aR  Refactor",
+"",
+" Chat only (no inline version):",
+"   <leader>ar  Review code",
+"   <leader>ae  Explain code",
+"   <leader>aD  Debug code",
+"",
+" Diff controls (after inline action):",
+"   <leader>da  Accept changes",
+"   <leader>dr  Reject changes",
+"",
+    "====================================================================",
+    " CONTEXT & SESSIONS",
+    "====================================================================",
+    "   <leader>aF   Add file(s) to context (file picker)",
+    "   <leader>as   Browse/restore chat sessions",
     "",
-    "-------------------------------------------------------------------",
+    "   :AIContext project   Show project structure",
+    "   :AIContext git       Show git status",
+    "   :AIContext file      Pick files to show",
+    "   :AISessions          Browse saved sessions",
+    "   :AISave [name]       Save current session",
+    "",
+    "====================================================================",
     " DIFF (Inline code changes)",
-    "-------------------------------------------------------------------",
-    "   <leader>da   Accept diff change",
-    "   <leader>dr   Reject diff change",
-    "   <leader>dD   Super Diff view (all changes across files)",
+    "====================================================================",
+    "   <leader>da   Accept all diff changes",
+    "   <leader>dr   Reject all diff changes",
+    "   <leader>dh   Accept current hunk only",
+    "   <leader>dn   Next diff hunk",
+    "   <leader>dp   Previous diff hunk",
+    "   <leader>du   Undo last AI change",
+    "   <leader>dD   Super Diff view (all changes)",
     "",
-    "-------------------------------------------------------------------",
-    " COMMANDS",
-    "-------------------------------------------------------------------",
+    "====================================================================",
+    " CUSTOM PROMPTS",
+    "====================================================================",
+    "   :AIPrompts list      List loaded prompts",
+    "   :AIPrompts reload    Reload prompts from .ai/prompts/",
+    "   :AIPrompts init      Create example prompt file",
+    "   :AIPrompts dir       Show prompts directory",
+    "",
+    "====================================================================",
+    " COST-SAVING CONFIG OPTIONS (v2.1)",
+    "====================================================================",
+    "   enabled = false           Disable all AI features",
+    "   context.max_context_lines = 500   Truncate file context",
+    "   context.exclude_patterns = {...}  Exclude files from context",
+    "   chat.max_buffer_lines = 1000      Truncate buffer in chat",
+    "   autocomplete.context_window = 4000  Reduce autocomplete context",
+    "   autocomplete.n_completions = 1    Request fewer completions",
+    "   autocomplete.max_tokens = 128     Limit completion length",
+    "",
+    "====================================================================",
+    " OTHER COMMANDS",
+    "====================================================================",
     "   :LMStudioReconnect   Re-check LM Studio connection",
     "   :Copilot auth        Authenticate with GitHub Copilot",
+    "   :AIUndo              Undo last AI change",
+    "   :AISnapshots         List AI change snapshots",
     "",
-    "                    Press 'q' or <Esc> to close                  ",
+    "                    Press 'q' or <Esc> to close                     ",
   }
 
   -- Calculate window dimensions dynamically
@@ -65,7 +152,7 @@ function M.show()
     width = math.max(width, vim.fn.strdisplaywidth(line))
   end
   width = width + 2 -- Add some padding
-  local height = #lines
+  local height = math.min(#lines, vim.o.lines - 4) -- Cap height
   local row = math.floor((vim.o.lines - height) / 2)
   local col = math.floor((vim.o.columns - width) / 2)
 

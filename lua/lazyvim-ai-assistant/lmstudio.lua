@@ -27,8 +27,8 @@ function M.check()
     "curl -s -o /dev/null -w '%%{http_code}' --connect-timeout 0.3 %s 2>/dev/null",
     safe_url
   )
-  local handle = io.popen(cmd)
-  if handle then
+  local ok, handle = pcall(io.popen, cmd)
+  if ok and handle then
     local result = handle:read("*a")
     handle:close()
     M._is_running = (result == "200")
