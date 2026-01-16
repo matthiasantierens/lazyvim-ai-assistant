@@ -395,6 +395,10 @@ Plan mode configures CodeCompanion with read-only tools. If the AI still tries t
 
 Run `:checkhealth lazyvim-ai-assistant` to diagnose issues.
 
+## Acknowledgments
+
+This plugin was built with [OpenCode](https://opencode.ai/), an AI-powered coding assistant for the terminal.
+
 ## License
 
 MIT
