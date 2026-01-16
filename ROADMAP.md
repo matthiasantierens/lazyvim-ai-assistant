@@ -103,7 +103,7 @@ agent = {
 
 | Key | Mode | Action |
 |-----|------|--------|
-| `<leader>ac` | Normal/Visual | Add file(s) to context via picker |
+| `<leader>aF` | Normal/Visual | Add file(s) to context via picker |
 
 **Configuration**:
 
@@ -354,7 +354,7 @@ require("lazyvim-ai-assistant").setup({
 ### Context
 | Key | Mode | Action |
 |-----|------|--------|
-| `<leader>ac` | Normal/Visual | Add file(s) to context |
+| `<leader>aF` | Normal/Visual | Add file(s) to context |
 
 ### Sessions
 | Key | Mode | Action |

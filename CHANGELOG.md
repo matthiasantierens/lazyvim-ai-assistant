@@ -38,6 +38,14 @@ All notable changes to lazyvim-ai-assistant will be documented in this file.
 - AI change snapshots for undo (`<leader>du`)
 - Commands: `:AIUndo`, `:AISnapshots`, `:AIClearSnapshots`
 
+#### Chat Improvements
+- **Auto-include buffer context**: Opening a new chat with `<leader>aa` now automatically includes the current file
+- New `chat` configuration section with `auto_include_buffer`, `buffer_sync_mode`, `show_backend_notification`
+- Startup notification shows "(with file context)" when auto-include is enabled
+
+### Fixed
+- Fixed CodeCompanion adapter registration for updated API (adapters now under `adapters.http`)
+
 ### New Built-in Prompts
 - `/refactor` - Refactor selected code
 - `/test` - Generate tests for code
@@ -49,7 +57,8 @@ All notable changes to lazyvim-ai-assistant will be documented in this file.
 - `<Tab>` (chat) - Toggle Plan/Build mode
 - `<leader>ab` - Switch to Build mode
 - `<leader>ap` - Switch to Plan mode
-- `<leader>ac` - Add files to context
+- `<leader>an` - New chat without file context
+- `<leader>aF` - Add files to context
 - `<leader>as` - Browse sessions
 - `<leader>aR` - Refactor code (visual)
 - `<leader>at` - Write tests (visual)
@@ -63,6 +72,11 @@ All notable changes to lazyvim-ai-assistant will be documented in this file.
 
 ### New Configuration Options
 ```lua
+chat = {
+  auto_include_buffer = true,
+  buffer_sync_mode = "diff",
+  show_backend_notification = true,
+},
 agent = {
   default_mode = "build",
   show_mode_indicator = true,

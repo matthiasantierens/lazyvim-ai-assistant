@@ -18,6 +18,13 @@ M.config = {
     chat_model = "claude-sonnet-4.5",
   },
 
+  -- Chat behavior settings
+  chat = {
+    auto_include_buffer = true, -- Include current file when opening new chat
+    buffer_sync_mode = "diff", -- "diff" (changes only) or "all" (full content)
+    show_backend_notification = true, -- Show "Using LM Studio/Copilot" on startup
+  },
+
   -- v2.0.0: Agent mode settings (Plan/Build)
   agent = {
     default_mode = "build", -- "build" or "plan"
@@ -99,6 +106,27 @@ end
 ---@return string
 function M.get_copilot_chat_model()
   return M.config.copilot.chat_model
+end
+
+-- Chat getters
+--- Get chat auto-include buffer setting
+---@return boolean
+function M.get_chat_auto_include_buffer()
+  local chat = M.config.chat or {}
+  return chat.auto_include_buffer ~= false
+end
+
+--- Get chat buffer sync mode
+---@return string "diff" or "all"
+function M.get_chat_buffer_sync_mode()
+  return (M.config.chat or {}).buffer_sync_mode or "diff"
+end
+
+--- Get chat show backend notification setting
+---@return boolean
+function M.get_chat_show_backend_notification()
+  local chat = M.config.chat or {}
+  return chat.show_backend_notification ~= false
 end
 
 -- v2.0.0: Agent mode getters

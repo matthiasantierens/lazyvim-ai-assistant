@@ -78,6 +78,14 @@ T['default config']['has history section'] = function()
   eq(result.auto_save, true)
 end
 
+T['default config']['has chat section'] = function()
+  local result = child.lua_get('M.config.chat')
+  h.expect_truthy(result)
+  eq(result.auto_include_buffer, true)
+  eq(result.buffer_sync_mode, 'diff')
+  eq(result.show_backend_notification, true)
+end
+
 -- =============================================================================
 -- get_config()
 -- =============================================================================
@@ -121,6 +129,27 @@ end
 T['copilot getters']['get_copilot_chat_model returns default'] = function()
   local result = child.lua_get('M.get_copilot_chat_model()')
   h.expect_match(result, 'sonnet')
+end
+
+-- =============================================================================
+-- Chat getters
+-- =============================================================================
+
+T['chat getters'] = new_set()
+
+T['chat getters']['get_chat_auto_include_buffer returns true by default'] = function()
+  local result = child.lua_get('M.get_chat_auto_include_buffer()')
+  eq(result, true)
+end
+
+T['chat getters']['get_chat_buffer_sync_mode returns diff by default'] = function()
+  local result = child.lua_get('M.get_chat_buffer_sync_mode()')
+  eq(result, 'diff')
+end
+
+T['chat getters']['get_chat_show_backend_notification returns true by default'] = function()
+  local result = child.lua_get('M.get_chat_show_backend_notification()')
+  eq(result, true)
 end
 
 -- =============================================================================
@@ -171,6 +200,19 @@ T['setup() merging']['overrides history settings'] = function()
   local result = child.lua_get('M.config.history')
   eq(result.enabled, false)
   eq(result.max_sessions, 100)
+end
+
+T['setup() merging']['overrides chat settings'] = function()
+  child.lua('M.setup({ chat = { auto_include_buffer = false, buffer_sync_mode = "all" } })')
+  local result = child.lua_get('M.config.chat')
+  eq(result.auto_include_buffer, false)
+  eq(result.buffer_sync_mode, 'all')
+end
+
+T['setup() merging']['chat getters work with overridden config'] = function()
+  child.lua('M.setup({ chat = { auto_include_buffer = false } })')
+  local result = child.lua_get('M.get_chat_auto_include_buffer()')
+  eq(result, false)
 end
 
 T['setup() merging']['works with empty config'] = function()

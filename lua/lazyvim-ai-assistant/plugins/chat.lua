@@ -261,10 +261,18 @@ return {
 
       -- Notify which chat backend is active
       vim.defer_fn(function()
-        if use_lmstudio then
-          vim.notify("Chat: Using LM Studio", vim.log.levels.INFO)
-        else
-          vim.notify("Chat: Using Copilot (" .. cfg.copilot_chat_model .. ")", vim.log.levels.INFO)
+        local main_cfg = require("lazyvim-ai-assistant").get_config()
+        local chat_cfg = main_cfg.chat or {}
+
+        if chat_cfg.show_backend_notification ~= false then
+          local auto_buffer = chat_cfg.auto_include_buffer ~= false
+          local buffer_note = auto_buffer and " (with file context)" or ""
+
+          if use_lmstudio then
+            vim.notify("Chat: Using LM Studio" .. buffer_note, vim.log.levels.INFO)
+          else
+            vim.notify("Chat: Using Copilot (" .. cfg.copilot_chat_model .. ")" .. buffer_note, vim.log.levels.INFO)
+          end
         end
       end, 200)
 
@@ -388,9 +396,33 @@ return {
       })
     end,
     keys = {
-      -- Existing keymaps
-      { "<leader>aa", "<cmd>CodeCompanionChat Toggle<cr>", mode = "n", desc = "Toggle CodeCompanion Chat" },
+      -- Chat keymaps
+      {
+        "<leader>aa",
+        function()
+          local main = require("lazyvim-ai-assistant")
+          local chat_cfg = main.get_config().chat or {}
+          local auto_include = chat_cfg.auto_include_buffer ~= false
+          local sync_mode = chat_cfg.buffer_sync_mode or "diff"
+
+          local codecompanion = require("codecompanion")
+          local last_chat = codecompanion.last_chat()
+
+          if last_chat then
+            vim.cmd("CodeCompanionChat Toggle")
+          else
+            if auto_include then
+              vim.cmd("CodeCompanionChat #buffer{" .. sync_mode .. "}")
+            else
+              vim.cmd("CodeCompanionChat")
+            end
+          end
+        end,
+        mode = "n",
+        desc = "Toggle CodeCompanion Chat",
+      },
       { "<leader>aa", ":'<,'>CodeCompanionChat<cr>", mode = "v", desc = "Chat with selection" },
+      { "<leader>an", "<cmd>CodeCompanionChat<cr>", mode = "n", desc = "New chat (no file context)" },
       { "<leader>aA", ":'<,'>CodeCompanionChat Add<cr>", mode = "v", desc = "Add selection to chat" },
       { "<leader>ar", ":'<,'>CodeCompanion /review<cr>", mode = "v", desc = "Review code" },
       { "<leader>ae", ":'<,'>CodeCompanion /explain<cr>", mode = "v", desc = "Explain code" },

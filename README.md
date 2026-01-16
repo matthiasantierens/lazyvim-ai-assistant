@@ -142,7 +142,8 @@ Press `<leader>ah` in Neovim to show all keybindings anytime.
 
 | Shortcut | Mode | Action |
 |----------|------|--------|
-| `<leader>aa` | Normal | Toggle chat |
+| `<leader>aa` | Normal | Toggle chat (includes current file) |
+| `<leader>an` | Normal | New chat (no file context) |
 | `<leader>aa` | Visual | Chat with selection |
 | `<leader>aA` | Visual | Add selection to existing chat |
 | `<leader>ai` | Normal | Inline prompt |
@@ -166,7 +167,7 @@ Press `<leader>ah` in Neovim to show all keybindings anytime.
 
 | Shortcut | Action |
 |----------|--------|
-| `<leader>ac` | Add file(s) to context |
+| `<leader>aF` | Add file(s) to context |
 | `<leader>as` | Browse/restore sessions |
 
 ### Diff (Inline code changes)
@@ -251,6 +252,13 @@ require("lazyvim-ai-assistant").setup({
     chat_model = "claude-sonnet-4.5",
   },
 
+  -- Chat behavior
+  chat = {
+    auto_include_buffer = true,      -- Include current file when opening new chat
+    buffer_sync_mode = "diff",       -- "diff" (changes only) or "all" (full content)
+    show_backend_notification = true, -- Show backend info on startup
+  },
+
   -- v2.0.0: Agent mode settings
   agent = {
     default_mode = "build",      -- "build" or "plan"
@@ -277,6 +285,23 @@ require("lazyvim-ai-assistant").setup({
     max_sessions = 50,           -- Max stored sessions
   },
 })
+```
+
+### Chat Behavior Options
+
+The `chat` section controls how the chat buffer behaves:
+
+- **`auto_include_buffer`**: When `true` (default), opening a new chat with `<leader>aa` automatically includes the current file as context using the `#buffer` variable.
+- **`buffer_sync_mode`**: Controls how buffer changes are synced:
+  - `"diff"` (default): Only sends changed portions, saving tokens
+  - `"all"`: Sends entire buffer content on any change
+- **`show_backend_notification`**: When `true` (default), shows which AI backend is active on startup.
+
+To disable auto-include (revert to plain chat):
+```lua
+chat = {
+  auto_include_buffer = false,
+}
 ```
 
 ## Custom Prompts
@@ -394,6 +419,42 @@ Plan mode configures CodeCompanion with read-only tools. If the AI still tries t
 ### Health Check
 
 Run `:checkhealth lazyvim-ai-assistant` to diagnose issues.
+
+<details>
+<summary><strong>For AI/LLM Agents</strong></summary>
+
+### Quick Reference
+
+**Entry Point**: `lua/lazyvim-ai-assistant/init.lua`
+
+**Architecture**:
+```
+init.lua              → Config, setup, getters
+plugins/chat.lua      → CodeCompanion integration
+plugins/autocomplete.lua → Copilot/Minuet
+agent.lua             → Plan/Build mode
+lmstudio.lua          → LM Studio connection
+```
+
+**Config Structure**:
+```lua
+{ lmstudio, copilot, chat, agent, context, prompts, history }
+```
+
+**Development**:
+```bash
+make deps    # Install test dependencies
+make test    # Run all 152 tests
+```
+
+**Conventions**:
+- LuaDoc annotations on public functions
+- `<leader>a` prefix for AI keybindings
+- Module pattern: `local M = {} ... return M`
+
+See [AGENTS.md](AGENTS.md) for complete agent instructions.
+
+</details>
 
 ## Acknowledgments
 
