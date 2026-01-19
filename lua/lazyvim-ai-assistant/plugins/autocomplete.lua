@@ -139,9 +139,12 @@ return {
         -- Reduce notifications to warnings only
         notify = "warn",
         -- v2.0.0: Check if AI is enabled before making requests
-        enabled = function()
-          return is_ai_enabled()
-        end,
+        -- Note: enable_predicates replaced 'enabled' in minuet v0.8.0
+        enable_predicates = {
+          function()
+            return is_ai_enabled()
+          end,
+        },
 
         -- Custom prompt to avoid markdown formatting
         default_template = {
